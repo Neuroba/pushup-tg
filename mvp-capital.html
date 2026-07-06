@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>PushUp · Мой капитал</title>
+<style>
+  :root{--bg:#0f151d;--surface:#1a232e;--surface2:#212d3a;--line:#2b3947;--text:#eaf0f6;
+    --muted:#8496a6;--brand:#f97316;--flame:#ef4444;--gold:#fbbf24;--ok:#34d399;
+    --shadow:0 12px 30px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:440px;margin:0 auto;padding:20px 18px 40px;display:flex;flex-direction:column;gap:16px}
+  .top{display:flex;align-items:center;gap:12px}
+  .top .m{font-size:36px;filter:drop-shadow(0 6px 16px rgba(249,115,22,.4))}
+  .top h1{font-size:20px;font-weight:900;margin:0;letter-spacing:-.01em}
+  .top .sub{font-size:12px;color:var(--muted);margin-top:1px}
+
+  .hero{background:radial-gradient(120% 100% at 50% 0,rgba(251,191,36,.14),var(--surface));
+    border:1px solid var(--line);border-radius:22px;padding:26px 20px;text-align:center;box-shadow:var(--shadow)}
+  .hero .lbl{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  .hero .big{font-size:56px;font-weight:900;line-height:1;margin:8px 0 2px;color:var(--text);
+    text-shadow:0 0 26px rgba(251,191,36,.35)}
+  .hero .unit{font-size:15px;color:var(--muted);font-weight:700}
+  .hero .today{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:rgba(52,211,153,.12);
+    border:1px solid rgba(52,211,153,.35);color:var(--ok);border-radius:999px;padding:6px 14px;
+    font-size:13px;font-weight:800}
+
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .stat .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-size:26px;font-weight:900;margin-top:6px}
+  .stat .v.rank{color:var(--brand)}
+  .stat .cap{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .fund{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+  .fund .head{display:flex;align-items:center;justify-content:space-between}
+  .fund .k{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    display:flex;align-items:center;gap:7px}
+  .fund .live{font-size:10px;font-weight:800;color:var(--ok);display:flex;align-items:center;gap:5px}
+  .fund .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);
+    box-shadow:0 0 8px var(--ok);animation:pulse 1.6s infinite}
+  @keyframes pulse{50%{opacity:.4}}
+  .fund .amt{font-size:34px;font-weight:900;margin:10px 0 4px}
+  .fund .amt .c{color:var(--gold)}
+  .fund .note{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .fund .bar{height:8px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-top:14px}
+  .fund .bar>i{display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,#f97316,#fbbf24);transition:width 1.2s ease}
+  .fund .barcap{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:7px}
+
+  .how{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow)}
+  .how h3{margin:0 0 12px;font-size:14px;font-weight:850}
+  .how ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+  .how li{display:flex;align-items:center;gap:12px;font-size:14px}
+  .how li .i{font-size:20px;flex:none}
+  .how li .pts{margin-left:auto;font-weight:800;color:var(--gold);font-size:13px}
+
+  .cta{background:var(--brand);color:#0e141b;border:0;border-radius:16px;padding:17px;font-size:16px;
+    font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(249,115,22,.35)}
+  .disc{font-size:11px;color:var(--muted);text-align:center;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="m">🦫</div>
+    <div><h1>Мой капитал</h1><div class="sub">Копится за каждое отжимание</div></div>
+  </div>
+
+  <div class="hero">
+    <div class="lbl">🪙 PushPoints</div>
+    <div class="big mono" id="pp">0</div>
+    <div class="unit">твой накопленный вклад</div>
+    <div class="today">▲ <span class="mono" id="today">+0</span> сегодня</div>
+  </div>
+
+  <div class="row2">
+    <div class="stat"><div class="k">Ранг</div><div class="v rank mono" id="rank">—</div><div class="cap">по вкладу</div></div>
+    <div class="stat"><div class="k">Серия</div><div class="v mono">🔥 12</div><div class="cap">дней подряд</div></div>
+  </div>
+
+  <div class="fund">
+    <div class="head">
+      <span class="k">🏦 Фонд комьюнити</span>
+      <span class="live">live</span>
+    </div>
+    <div class="amt mono">$<span class="c" id="fund">0</span></div>
+    <div class="note">Общий капитал, который мы строим вместе — 10% каждой подписки. Ты в топ <b id="pct">—</b> вкладчиков.</div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="barcap"><span>твой вклад</span><span>топ-1%</span></div>
+  </div>
+
+  <div class="how">
+    <h3>Как копить быстрее</h3>
+    <ul>
+      <li><span class="i">💪</span> Каждое отжимание <span class="pts">+1</span></li>
+      <li><span class="i">🎯</span> Выполнил дневную цель <span class="pts">+25</span></li>
+      <li><span class="i">🔥</span> Держишь серию <span class="pts">+10 × дни</span></li>
+      <li><span class="i">🏅</span> Побил рекорд <span class="pts">+15</span></li>
+    </ul>
+  </div>
+
+  <button class="cta" onclick="location.reload()">💪 Тренироваться</button>
+  <div class="disc">PushPoints — внутренний прогресс, не валюта и не инвестиция. Фонд показан для прозрачности.</div>
+</div>
+
+<script>
+  // демо-анимация счётчиков (в проде — данные из Supabase)
+  function animate(el, to, dur, prefix){
+    var t0=null; prefix=prefix||"";
+    function step(t){ if(!t0)t0=t; var p=Math.min(1,(t-t0)/dur);
+      var v=Math.floor(p*to); el.textContent=prefix+v.toLocaleString("ru");
+      if(p<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+  animate(document.getElementById("pp"), 3480, 900);
+  document.getElementById("today").textContent = "+142";
+  document.getElementById("rank").textContent = "#37";
+  animate(document.getElementById("fund"), 2140, 1100);
+  document.getElementById("pct").textContent = "8%";
+  setTimeout(function(){ document.getElementById("bar").style.width="72%"; }, 300);
+</script>
+</body>
+</html>
