@@ -360,11 +360,34 @@
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(link).then(function(){ toast('Ссылка скопирована ✓'); }, function(){ toast(link); });
     } else { toast(link); } };
-  // захват приглашения при входе (start_param=ref_<id>) → бонус приглашённому
+  // ---- Supabase sync (Фаза 0): RPC tg_sync — сервер авторитетен по баллам/рефералам ----
+  var SB_URL='https://wdnrdxqkajobjaorssza.supabase.co';
+  var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkbnJkeHFrYWpvYmphb3Jzc3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMjkwMDgsImV4cCI6MjA5NzkwNTAwOH0.5C8ORvvh9AOURwrEjlaNawjNrc-kortPZKKF6TgTPpg';
+  function refreshVisible(){
+    if(document.getElementById('s-home').classList.contains('on')) renderHome();
+    if(document.getElementById('s-capital').classList.contains('on')) renderCapital();
+    if(document.getElementById('s-invite').classList.contains('on')) renderInvite();
+  }
+  function sbSync(){
+    if(!(user && user.id)) return; // вне Telegram — только localStorage
+    var payload={ p_telegram_id:user.id, p_first_name:(user.first_name||null), p_username:(user.username||null),
+      p_points:db.points, p_total:db.total, p_streak:db.streak, p_last_day:db.lastDay,
+      p_ref_by:(db.refBy?Number(db.refBy):null) };
+    fetch(SB_URL+'/rest/v1/rpc/tg_sync',{ method:'POST',
+      headers:{ 'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json' },
+      body:JSON.stringify(payload) })
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(p){ if(!p) return; if(Array.isArray(p)) p=p[0]; if(!p) return;
+      db.points=p.points; db.total=p.total; db.streak=p.streak; db.lastDay=p.last_day; db.invited=p.invited||0; save(db);
+      if(p.ref_by && !db.refToasted){ db.refToasted=true; save(db); toast('🎁 +200 PushPoints за приглашение!'); }
+      refreshVisible();
+    }).catch(function(){});
+  }
+  // захват приглашения при входе (start_param=ref_<id>) — начисляет СЕРВЕР при первом синке
   (function(){ var sp=tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param;
-    if(sp && sp.indexOf('ref_')===0 && !db.refClaimed){ var by=sp.slice(4);
-      if(by && (!user || String(user.id)!==by)){ db.refBy=by; db.refClaimed=true; db.points+=200; save(db);
-        setTimeout(function(){ toast('🎁 +200 PushPoints за приглашение!'); },900); } } })();
+    if(sp && sp.indexOf('ref_')===0 && !db.refBy){ var by=sp.slice(4);
+      if(by && (!user || String(user.id)!==by)){ db.refBy=by; save(db); } } })();
+  sbSync();
 
   // ---- rep detector: НАКЛОН/направление гравитации (позиционный, НЕ зависит от скорости) ----
   // Считаем цикл «вниз → вверх» по углу наклона относительно позы покоя (верх отжимания).
@@ -452,7 +475,7 @@
       db.streak = (db.lastDay===y)? db.streak+1 : 1; db.lastDay=today;
       earned += 10*db.streak; // стрик-бонус
     }
-    db.points += earned; db.total += reps; save(db);
+    db.points += earned; db.total += reps; save(db); sbSync();
     document.getElementById('r-reps').textContent=reps;
     document.getElementById('r-xp').textContent='+'+(reps*10)+' XP';
     document.getElementById('r-pts').textContent='+'+earned+' 🪙';
