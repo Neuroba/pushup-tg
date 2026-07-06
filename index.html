@@ -125,6 +125,12 @@
     padding:11px 4px;font-size:12.5px;font-weight:800;color:var(--slate);cursor:pointer;font-family:inherit;box-shadow:var(--shadow-card)}
   .presets button.on{color:var(--brand-dark);border-color:var(--brand);background:var(--accent)}
   .hint{font-size:12px;color:var(--slate);font-weight:700;line-height:1.5;text-align:center}
+  /* задания дня: баннер + прогресс сегмента (порт proto-fund в стиль нативки) */
+  .taskban{margin:0 auto;padding:9px 16px;border-radius:var(--r-xl);font-size:13.5px;font-weight:900;text-align:center;
+    color:var(--brand-dark);background:var(--accent);border:1px solid var(--brdr);max-width:96%}
+  .wgoal{color:var(--slate);font-size:.5em;font-weight:900}
+  .segbar{height:8px;background:var(--panel);border-radius:999px;overflow:hidden}
+  .segbar>i{display:block;height:100%;width:0;background:var(--grad-energy);border-radius:999px;transition:width .3s}
 
   /* RESULT */
   .rcard{background:var(--surface);border:1px solid var(--brdr);border-radius:var(--r-3xl);padding:26px 20px;text-align:center;box-shadow:var(--shadow-card)}
@@ -216,28 +222,20 @@
     </button>
   </div>
 
-  <!-- WORKOUT -->
+  <!-- WORKOUT · задания дня (присед/прыжок), пик-детектор любой угол -->
   <div class="screen" id="s-workout">
-    <div class="top"><span class="m">💪</span><div><h1>Тренировка</h1><div class="sub" id="w-state">Нажми «Поехали» и начинай</div></div></div>
-    <div class="coach"><div class="cglow"></div><img id="w-coach" src="assets/coach-up.png" alt=""></div>
-    <div class="wcount mono" id="w-count">0</div>
-    <div class="wsub" id="w-hint">Выбери движение и двигайся ритмично</div>
-    <div class="presets" id="presets">
-      <button data-th="12" class="on" type="button">💪 Отжимания</button>
-      <button data-th="10" type="button">🐢 Медленно</button>
-      <button data-th="22" type="button">🙌 Махи</button>
-    </div>
+    <div class="top"><span class="m">💪</span><div><h1 id="w-title">Задание дня</h1><div class="sub" id="w-state">Присед и прыжок — под любым углом</div></div>
+      <div class="streakpill"><img class="ember" id="w-ember" src="assets/ember-out.png" alt="🔥"><span class="n mono" id="w-streak">0</span></div></div>
+    <div class="taskban" id="w-taskban">Задание дня 1 · 5 приседаний</div>
+    <div class="coach"><div class="cglow"></div><img id="w-coach" src="assets/coach-up.png" alt="" onerror="if(this.src.indexOf('coach-')<0)this.src='assets/coach-up.png';"></div>
+    <div class="wcount mono"><span id="w-count">0</span><span class="wgoal"> / <span id="w-goal">5</span></span></div>
+    <div class="wsub" id="w-hint">Нажми «Начать» — считаю движения автоматически</div>
     <div class="wcard">
-      <div class="lbl"><span>Наклон сейчас</span><span class="mono" id="w-mag">—</span></div>
-      <canvas id="wchart" height="70"></canvas>
-    </div>
-    <div class="calib">
-      <div class="row"><span>Чувствительность</span><span class="mono" id="w-th">12°</span></div>
-      <input type="range" id="w-slider" min="7" max="35" step="1" value="12">
-      <div class="hint" id="w-cal">Пропускает медленные? — двинь влево. Считает лишнее? — вправо.</div>
+      <div class="lbl"><span id="w-seg">задание 1 / 30</span><span class="mono" id="w-cue">Присядь ↓</span></div>
+      <div class="segbar"><i id="w-segbar"></i></div>
     </div>
     <div class="spacer"></div>
-    <button class="btn primary" id="w-btn" onclick="toggleWorkout()">▶︎ Поехали</button>
+    <button class="btn primary" id="w-btn" onclick="toggleWorkout()">▶︎ Начать задание</button>
     <button class="btn dark" onclick="finishWorkout()">Завершить</button>
   </div>
 
@@ -431,17 +429,62 @@
       if(by && (!user || String(user.id)!==by)){ db.refBy=by; save(db); } } })();
   sbSync();
 
-  // ---- rep detector: НАКЛОН/направление гравитации (позиционный, НЕ зависит от скорости) ----
-  // Считаем цикл «вниз → вверх» по углу наклона относительно позы покоя (верх отжимания).
-  // Медленное движение даёт тот же угол, что и быстрое, — поэтому засчитывается в любом темпе.
-  var running=false, reps=0, phase='up', lastRep=0, DOWN=12, peak=0, ang=0;
-  var gX=null,gY=null,gZ=null, bX=0,bY=0,bZ=0, haveBase=false;
-  var elCount=document.getElementById('w-count'), elMag=document.getElementById('w-mag'),
+  // ---- ЗАДАНИЯ ДНЯ: 30 усиливающихся вариаций (присед/прыжок), сегментами (из tasks.json) ----
+  // move: 'squat'=приседания, 'jump'=прыжки. Задание = цепочка сегментов [move, кол-во].
+  var TASKS=[
+    [['squat',5]],[['squat',8]],[['squat',10]],
+    [['jump',5]],[['jump',8]],[['jump',10]],
+    [['squat',5],['jump',5]],[['squat',8],['jump',5]],[['squat',10],['jump',8]],
+    [['jump',5],['squat',5],['jump',5]],
+    [['squat',12]],[['jump',12]],
+    [['squat',8],['jump',8],['squat',8]],
+    [['jump',10],['squat',10]],
+    [['squat',6],['jump',6],['squat',6],['jump',6]],
+    [['squat',15]],[['jump',15]],
+    [['squat',10],['jump',10],['squat',10]],
+    [['jump',8],['squat',8],['jump',8],['squat',8]],
+    [['squat',12],['jump',12]],
+    [['squat',20]],
+    [['squat',10],['jump',10],['squat',10],['jump',10]],
+    [['squat',15],['jump',15]],
+    [['jump',20]],
+    [['squat',8],['jump',8],['squat',8],['jump',8],['squat',8]],
+    [['squat',15],['jump',15],['squat',15]],
+    [['squat',25]],
+    [['jump',10],['squat',15],['jump',10]],
+    [['squat',12],['jump',12],['squat',12],['jump',12]],
+    [['squat',20],['jump',20],['squat',20]]
+  ];
+  var RU1={squat:'приседаний',jump:'прыжков'}, RU2={squat:'Приседания',jump:'Прыжки'};
+  var CUE={squat:{word:'Присядь',ar:'↓'}, jump:{word:'Прыгай',ar:'↑'}};
+  function taskName(t){ return t.map(function(s){ return s[1]+' '+RU1[s[0]]; }).join(' + '); }
+  // ---- ПОЗЫ капибары под движение (per-stage): ПЕРЕИСПОЛЬЗУЕМ STAGES/stageOf выше ----
+  // Аватар под ТЕКУЩУЮ стадию юзера. Пока Mac не положил per-stage файлы — HAS_STAGE_POSES=false →
+  // санкционированный coach-маскот (stand=coach-up, присед=coach-down, прыжок=coach-cheer).
+  // Когда позы стадий лежат в assets/pose/ → HAS_STAGE_POSES=true, берётся stage-NN-{pose}.png.
+  var HAS_STAGE_POSES=false;
+  function currentStage(){ return Math.min(STAGES.length, stageOf(db.points)+1); } // 1..10
+  function posePath(phase){ // phase = stand|squat|jump
+    if(!HAS_STAGE_POSES) return phase==='squat'?'assets/coach-down.png':phase==='jump'?'assets/coach-cheer.png':'assets/coach-up.png';
+    return 'assets/pose/stage-'+('0'+currentStage()).slice(-2)+'-'+phase+'.png';
+  }
+  // ---- rep detector: ПИК МАГНИТУДЫ ускорения — присед/прыжок под ЛЮБЫМ углом ----
+  var running=false, lastPeak=0, armed=true, PEAK_TH=4.0;
+  var taskDay=db.taskDay||0, task=TASKS[taskDay%TASKS.length];
+  var curSeg=0, segReps=0, taskReps=0, taskGoal=0;
+  var elCount=document.getElementById('w-count'), elGoal=document.getElementById('w-goal'),
       elState=document.getElementById('w-state'), elHint=document.getElementById('w-hint'),
-      elBtn=document.getElementById('w-btn'), elCoach=document.getElementById('w-coach');
-  var coachT=null;
-  function coach(nm){ if(!elCoach) return; elCoach.src='assets/coach-'+nm+'.png';
-    elCoach.classList.remove('pump'); if(nm==='cheer'){ void elCoach.offsetWidth; elCoach.classList.add('pump'); } }
+      elBtn=document.getElementById('w-btn'), elCoach=document.getElementById('w-coach'),
+      elPop=document.querySelector('.wcount'), elTitle=document.getElementById('w-title'),
+      elBan=document.getElementById('w-taskban'), elSeg=document.getElementById('w-seg'),
+      elCue=document.getElementById('w-cue'), elSegbar=document.getElementById('w-segbar'),
+      elWStreak=document.getElementById('w-streak'), elWEmber=document.getElementById('w-ember');
+  function curMove(){ return task[curSeg][0]; }
+  function segGoal(){ return task[curSeg][1]; }
+  function poseStand(){ elCoach.src=posePath('stand'); }
+  function poseAct(mv){ elCoach.src=posePath(mv);
+    elCoach.classList.remove('pump'); void elCoach.offsetWidth; elCoach.classList.add('pump');
+    setTimeout(function(){ if(running) elCoach.src=posePath('stand'); },200); }
   // Этап 4: победный звук (Web Audio, синтез — без файлов) + конфетти
   var _ac=null;
   function playFinish(){ try{ if(!_ac) _ac=new (window.AudioContext||window.webkitAudioContext)();
@@ -459,102 +502,92 @@
         if(p.life>0 && p.y<H+20){ alive=true; x.save(); x.globalAlpha=Math.max(0,p.life); x.translate(p.x,p.y); x.rotate(p.r);
           x.fillStyle=p.c; x.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6); x.restore(); } }
       if(alive) requestAnimationFrame(frame); else x.clearRect(0,0,W,H); })(); }
-  var slider=document.getElementById('w-slider');
-  function setTH(v){ DOWN=v; slider.value=v; document.getElementById('w-th').textContent=v.toFixed(0)+'°'; }
-  slider.addEventListener('input', function(){ setTH(parseFloat(slider.value)); });
-  // пресеты типа движения — каждое ритмичное движение засчитывается
-  document.querySelectorAll('#presets button').forEach(function(b){
-    b.addEventListener('click', function(){
-      document.querySelectorAll('#presets button').forEach(function(x){ x.classList.remove('on'); });
-      b.classList.add('on'); setTH(parseFloat(b.dataset.th));
-    });
-  });
-  setTH(DOWN); // инициализация подписи/порога
-
-  // real-time chart
-  var cv=document.getElementById('wchart'), ctx, cw, ch, buf=[];
-  function prepChart(){ var dpr=Math.min(2,window.devicePixelRatio||1); cw=cv.clientWidth; ch=cv.height;
-    cv.width=cw*dpr; cv.height=ch*dpr; ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); }
-  var AMAX=45; // потолок шкалы угла на графике, °
-  function drawChart(){ if(!ctx) return; ctx.clearRect(0,0,cw,ch);
-    // линия порога «вниз»
-    var ty=ch-(Math.min(DOWN,AMAX)/AMAX)*ch; ctx.strokeStyle='rgba(249,115,22,.5)'; ctx.setLineDash([4,4]);
-    ctx.beginPath(); ctx.moveTo(0,ty); ctx.lineTo(cw,ty); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath(); ctx.strokeStyle='#34d399'; ctx.lineWidth=2;
-    for(var i=0;i<buf.length;i++){ var x=(i/(buf.length-1||1))*cw; var y=ch-(Math.min(buf[i],AMAX)/AMAX)*ch;
-      i?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke(); }
-
-  function onMotion(ev){
-    var a=ev.accelerationIncludingGravity; if(!a){ a=ev.acceleration; if(!a) return; }
-    var ax=a.x||0, ay=a.y||0, az=a.z||0;
-    // низкочастотный фильтр — выделяем направление гравитации (ориентацию телефона)
-    if(gX===null){ gX=ax; gY=ay; gZ=az; }
-    var k=0.18; gX+=k*(ax-gX); gY+=k*(ay-gY); gZ+=k*(az-gZ);
-    if(!haveBase){ bX=gX; bY=gY; bZ=gZ; haveBase=true; }
-    var m1=Math.sqrt(gX*gX+gY*gY+gZ*gZ)||1, m2=Math.sqrt(bX*bX+bY*bY+bZ*bZ)||1;
-    var cos=(gX*bX+gY*bY+gZ*bZ)/(m1*m2); if(cos>1)cos=1; if(cos<-1)cos=-1;
-    ang=Math.acos(cos)*57.2958; // угол наклона от позы покоя, °
-    buf.push(ang); if(buf.length>70) buf.shift();
-    elMag.textContent=ang.toFixed(0)+'°'; drawChart();
-    if(!running) return;
-    var now=Date.now(), UP=Math.max(4,DOWN*0.45);
-    if(phase==='up'){
-      // поза покоя (верх отжимания) медленно подстраивается — работает при любом хвате
-      bX+=0.02*(gX-bX); bY+=0.02*(gY-bY); bZ+=0.02*(gZ-bZ);
-      if(ang>=DOWN){ phase='down'; peak=ang; elState.textContent='Вниз… ▼'; coach('down'); }
-    } else {
-      if(ang>peak) peak=ang;
-      if(ang<=UP){ // вернулся наверх — повтор засчитан (в любом темпе)
-        if(now-lastRep>350){ reps++; lastRep=now; elCount.textContent=reps;
-          elCount.classList.remove('hit'); void elCount.offsetWidth; elCount.classList.add('hit'); hap('medium');
-          coach('cheer'); clearTimeout(coachT); coachT=setTimeout(function(){ if(phase==='up') coach('up'); },430); }
-        phase='up'; elState.textContent='Считаю… ▲';
-      }
+  function initTask(){ taskDay=db.taskDay||0; task=TASKS[taskDay%TASKS.length];
+    curSeg=0; segReps=0; taskReps=0; taskGoal=0;
+    task.forEach(function(s){ taskGoal+=s[1]; });
+    var mv=task[0][0], dn=(taskDay%TASKS.length)+1;
+    elBan.textContent='Задание дня '+dn+' · '+taskName(task);
+    elTitle.textContent=RU2[mv]; elGoal.textContent=task[0][1]; elCount.textContent='0';
+    elSeg.textContent='задание '+dn+' / 30'; elCue.textContent=CUE[mv].word+' '+CUE[mv].ar;
+    elState.textContent=RU2[mv]+' · под любым углом'; poseStand(); elSegbar.style.width='0%';
+    elWStreak.textContent=db.streak||0;
+    elWEmber.src='assets/ember-'+((db.streak||0)>0?'bright':'out')+'.png';
+  }
+  function showSeg(){ var mv=curMove();
+    poseStand(); elGoal.textContent=segGoal(); elCount.textContent=segReps;
+    elCue.textContent=CUE[mv].word+' '+CUE[mv].ar; elTitle.textContent=RU2[mv];
+    elState.textContent=RU2[mv]+' · под любым углом';
+    elSeg.textContent='сегмент '+(curSeg+1)+'/'+task.length+' · задание '+((taskDay%TASKS.length)+1)+'/30';
+    elSegbar.style.width=Math.round(taskReps/taskGoal*100)+'%';
+  }
+  function onRep(){ if(!running) return; segReps++; taskReps++;
+    elCount.textContent=segReps;
+    if(elPop){ elPop.classList.remove('hit'); void elPop.offsetWidth; elPop.classList.add('hit'); }
+    elSegbar.style.width=Math.min(100,Math.round(taskReps/taskGoal*100))+'%';
+    poseAct(curMove()); hap('medium');
+    if(segReps>=segGoal()){
+      if(curSeg<task.length-1){ curSeg++; segReps=0;
+        setTimeout(function(){ if(running){ showSeg();
+          elCue.textContent='Дальше: '+CUE[curMove()].word+' '+CUE[curMove()].ar; } },300);
+      } else taskDone();
     }
+  }
+  function taskDone(){ running=false; poseAct(curMove()); bankAndResult(true); }
+
+  // датчик: присед/прыжок = крупные пики магнитуды → ловит под ЛЮБЫМ углом (не зависит от ориентации)
+  function onMotion(ev){ var a=ev.accelerationIncludingGravity; if(!a){ a=ev.acceleration; if(!a) return; }
+    var m=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
+    var lin=Math.abs(m-9.8), now=Date.now();
+    if(lin>PEAK_TH && armed && now-lastPeak>340){ armed=false; lastPeak=now; onRep(); }
+    if(lin<PEAK_TH*0.5) armed=true;
   }
 
   function startSensors(){
     if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
       DeviceMotionEvent.requestPermission().then(function(s){
-        if(s==='granted'){ attach(); } else { elHint.textContent='Нет доступа к движению — разреши в настройках.'; }
-      }).catch(function(){ elHint.textContent='Датчик движения недоступен.'; });
+        if(s==='granted'){ attach(); } else { fallbackTap(); }
+      }).catch(function(){ fallbackTap(); });
     } else if(typeof DeviceMotionEvent!=='undefined'){ attach(); }
-    else { elHint.textContent='Датчик движения не поддерживается.'; }
+    else { fallbackTap(); }
   }
-  function attach(){ window.addEventListener('devicemotion', onMotion); running=true;
-    gX=gY=gZ=null; haveBase=false; phase='up'; peak=0; // калибруем позу покоя по текущему положению
-    elBtn.textContent='⏸ Пауза'; elState.textContent='Считаю… ▲'; elHint.textContent='Опускайся и поднимайся — засчитаю в любом темпе, телефон у корпуса'; coach('up'); }
-
+  function attach(){ window.addEventListener('devicemotion', onMotion); begin(); }
+  function begin(){ if(taskReps>=taskGoal) initTask(); running=true; armed=true; lastPeak=0;
+    showSeg(); elBtn.textContent='⏸ Пауза';
+    elHint.textContent='Двигайся — присед или прыжок, ловлю под любым углом'; }
+  var _tapBound=false;
+  function fallbackTap(){ begin(); elHint.textContent='Датчик недоступен — тапай по капибаре = повтор';
+    if(!_tapBound){ _tapBound=true;
+      document.querySelector('#s-workout .coach').addEventListener('pointerdown', function(){ if(running) onRep(); }); } }
   window.toggleWorkout=function(){
-    if(!running){ if(!buf.length) prepChart(); startSensors(); }
+    if(!running){ startSensors(); }
     else { running=false; elBtn.textContent='▶︎ Продолжить'; elState.textContent='Пауза'; }
   };
-  window.finishWorkout=function(){
+  // банк очков + экран результата. done=true → задание дня закрыто (бонус +25, taskDay++). Экономика/sbSync как в нативке.
+  function bankAndResult(done){
     running=false; window.removeEventListener('devicemotion', onMotion);
-    var earned = reps; // +1/повтор
-    var today = new Date().toISOString().slice(0,10);
-    if(db.lastDay!==today){ // серия
-      var y=new Date(Date.now()-86400000).toISOString().slice(0,10);
-      db.streak = (db.lastDay===y)? db.streak+1 : 1; db.lastDay=today;
-      earned += 10*db.streak; // стрик-бонус
-    }
-    db.points += earned; db.total += reps; save(db); sbSync();
-    document.getElementById('r-reps').textContent=reps;
-    document.getElementById('r-xp').textContent='+'+(reps*10)+' XP';
+    var did=taskReps, earned=did; // +1/повтор
+    var today=new Date().toISOString().slice(0,10);
+    if(did>0 && db.lastDay!==today){ var y=new Date(Date.now()-86400000).toISOString().slice(0,10);
+      db.streak=(db.lastDay===y)?db.streak+1:1; db.lastDay=today; earned+=10*db.streak; } // стрик-бонус
+    if(done===true){ earned+=25; db.taskDay=taskDay+1; } // бонус за закрытое задание дня
+    db.points+=earned; db.total+=did; save(db); sbSync();
+    document.getElementById('r-reps').textContent=did;
+    var ru=document.querySelector('#s-result .rcard .u'); if(ru) ru.textContent='повторов';
+    document.getElementById('r-xp').textContent='+'+(did*10)+' XP';
     document.getElementById('r-pts').textContent='+'+earned+' 🪙';
-    document.getElementById('r-streak').textContent = db.streak>1? ('🔥 Серия '+db.streak+' дней — держи!') : 'Первый день серии 🔥';
-    hap('heavy');
-    go('result');
-    playFinish();
+    document.getElementById('r-streak').textContent = done===true
+      ? ('✓ Задание дня закрыто · завтра: '+taskName(TASKS[(taskDay+1)%TASKS.length]))
+      : (db.streak>1? ('🔥 Серия '+db.streak+' дней — держи!') : 'Первый день серии 🔥');
+    hap('heavy'); go('result'); playFinish();
     var _ri=document.querySelector('#s-result .rcard img');
     if(_ri){ _ri.classList.remove('celebrate'); void _ri.offsetWidth; _ri.classList.add('celebrate'); }
     setTimeout(confetti,70);
-  };
-  function resetWorkout(){ reps=0; phase='up'; peak=0; running=false; buf=[]; gX=gY=gZ=null; haveBase=false;
-    elCount.textContent='0'; elBtn.textContent='▶︎ Поехали'; elState.textContent='Нажми «Поехали» и начинай';
-    elHint.textContent='Телефон у груди — опускайся и поднимайся в любом темпе'; coach('up'); setTimeout(prepChart,30); }
+  }
+  window.finishWorkout=function(){ bankAndResult(false); };
+  function resetWorkout(){ running=false; window.removeEventListener('devicemotion', onMotion);
+    initTask(); elBtn.textContent='▶︎ Начать задание'; elState.textContent=RU2[task[0][0]]+' · под любым углом'; }
 
-  renderHome();
+  renderHome(); initTask();
 })();
 </script>
 </body>
