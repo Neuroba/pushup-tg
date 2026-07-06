@@ -94,13 +94,13 @@
     <div class="top"><span class="m">💪</span><div><h1>Приседания</h1><div class="sub">Задание дня · копи дисциплину</div></div>
       <span class="streak">🔥 <span id="t-streak">5</span></span></div>
     <div class="arena">
-      <span class="invest-tag">💪 Копишь дисциплину</span>
+      <span class="invest-tag">🎮 Режим заданий · ×0.3 XP</span>
       <div class="cap-wrap"><div class="cap-glow"></div><img id="cap" src="assets/coach-up.png" alt=""></div>
       <div class="repbox"><div class="n mono"><span id="reps">0</span><b> / <span id="goal">10</span></b></div><div class="l">приседаний</div></div>
       <div class="setrow"><span>Подход <span id="set">1</span>/3</span><div class="bar"><i id="setbar"></i></div></div>
       <div class="cue"><span class="ar">↓</span> <span id="cue">Присядь · +дисциплина-валюта</span></div>
     </div>
-    <div class="tick"><div class="c">P</div><div class="t"><b id="t-earned">+0 PushPoints</b><span>копится в твой капитал дисциплины</span></div></div>
+    <div class="tick"><div class="c">P</div><div class="t"><b id="t-earned">+0 PushPoints</b><span>в приложении — в 3× больше XP · <b style="color:var(--gold)">полный режим</b></span></div></div>
     <button class="btn" id="startBtn">▶︎ Начать подход</button>
   </div>
 
@@ -125,7 +125,16 @@
         <li><i>3</i><div><b>Растёшь</b> — поднимаешься в лиге и уровне дисциплины, капибара эволюционирует.</div></li>
       </ul>
     </div>
-    <div class="disc">«Капитал дисциплины» — внутренняя игровая валюта: копишь тренировками, тратишь в игре. Это не деньги, не инвестиция и не выводится.</div>
+    <div class="explain">
+      <h3>Больше XP — в приложении</h3>
+      <ul>
+        <li><i>🎮</i><div><b>Задания · Telegram</b> — прыжки/приседания · <b style="color:var(--slate)">×0.3 XP</b> <span style="color:var(--gold)">← ты здесь</span></div></li>
+        <li><i>📱</i><div><b>Полный · приложение</b> — + отжимания, виджеты · <b style="color:var(--gold)">×1.0 XP</b></div></li>
+        <li><i>⭐</i><div><b>Про · подписка</b> — + камера-форма · <b style="color:var(--gold)">×1.5 XP</b> · вклад в призовой фонд челленджей</div></li>
+      </ul>
+      <button class="btn" id="dlBtn" style="margin-top:13px">📲 Скачать приложение — ×3 XP</button>
+    </div>
+    <div class="disc">«Капитал дисциплины» — внутренняя игровая валюта: копишь тренировками, тратишь в игре. Не деньги, не инвестиция, не выводится. Призовой фонд челленджей = награды в игре (XP/косметика/мерч), не выплаты.</div>
   </div>
 
   <div class="tabbar">
@@ -177,7 +186,8 @@
   }
 
   // датчик: прыжки/приседания = крупные пики (надёжно)
-  var lastPeak=0, armed=true, TH=4.6;
+  // пик магнитуды ускорения — НЕ зависит от ориентации → ловит прыжок/присед под ЛЮБЫМ углом
+  var lastPeak=0, armed=true, TH=4.0;
   function onMotion(ev){ var a=ev.accelerationIncludingGravity; if(!a){a=ev.acceleration; if(!a)return;}
     var m=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
     var lin=Math.abs(m-9.8), now=Date.now();
@@ -199,6 +209,7 @@
     document.querySelector('.arena').addEventListener('pointerdown', function(){ if(running) onRep(); });
   }
 
+  var dl=document.getElementById('dlBtn'); if(dl) dl.addEventListener('click',function(){ hap('rigid'); dl.textContent='📲 В релизе — ссылка на Google Play'; });
   // капитал: график роста
   function renderCap(){ document.getElementById('c-points').textContent=db.points.toLocaleString('ru');
     document.getElementById('c-streak').textContent=db.streak;
