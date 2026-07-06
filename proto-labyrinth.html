@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PushUp · Tilt-Лабиринт</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#F4F7F6;
+    color:#0f172a;
+    font-family:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+    overflow-x:hidden;
+    overscroll-behavior:none;
+  }
+  .app{
+    max-width:440px;margin:0 auto;min-height:100dvh;
+    display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 14px);
+    gap:12px;
+  }
+  .head{display:flex;align-items:center;gap:10px}
+  .head h1{font-size:22px;font-weight:900;letter-spacing:-.5px;line-height:1}
+  .head .sub{font-size:12px;color:#64748b;font-weight:700;margin-top:3px}
+  .head .logo{
+    width:44px;height:44px;flex:0 0 44px;border-radius:14px;
+    background:linear-gradient(135deg,#10B981,#06B6D4);
+    display:flex;align-items:center;justify-content:center;font-size:24px;
+    box-shadow:0 4px 0 0 #059669;
+  }
+  .hud{display:flex;gap:10px}
+  .card{
+    flex:1;background:#fff;border-radius:18px;padding:10px 12px;
+    box-shadow:0 6px 0 0 #D6DEDA;
+  }
+  .card .lbl{font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+  .card .val{font-size:22px;font-weight:900;margin-top:2px;display:flex;align-items:center;gap:5px}
+  .card .val .em{font-size:18px}
+  .c-pts .val{color:#EAB308}
+  .c-coin .val{color:#F97316}
+  .c-streak .val{color:#10B981}
+
+  .arena-wrap{flex:1;min-height:320px;display:flex;position:relative}
+  canvas#game{
+    width:100%;height:100%;
+    border-radius:28px;
+    background:radial-gradient(120% 100% at 50% 30%,#12303a,#0a1016 72%);
+    box-shadow:inset 0 0 0 2px rgba(16,185,129,.18),0 10px 30px rgba(6,20,25,.35);
+    touch-action:none;display:block;
+  }
+  .overlay{
+    position:absolute;inset:0;border-radius:28px;
+    background:radial-gradient(120% 100% at 50% 30%,rgba(18,48,58,.92),rgba(10,16,22,.96));
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:26px;gap:16px;color:#e2f5ee;z-index:5;
+  }
+  .overlay.hidden{display:none}
+  .overlay img{width:96px;height:96px;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,.5))}
+  .overlay h2{font-size:24px;font-weight:900;letter-spacing:-.5px}
+  .overlay p{font-size:14px;color:#a7c4bb;font-weight:600;max-width:280px;line-height:1.45}
+  .overlay .win-line{
+    font-size:15px;font-weight:800;color:#EAB308;
+    background:rgba(234,179,8,.12);padding:8px 14px;border-radius:14px;
+  }
+  .btn{
+    border:0;cursor:pointer;
+    background:linear-gradient(135deg,#10B981,#06B6D4);
+    color:#fff;font-weight:900;font-size:18px;letter-spacing:.3px;
+    padding:15px 34px;border-radius:20px;
+    font-family:inherit;
+    box-shadow:0 4px 0 0 #059669;
+    transition:transform .04s,box-shadow .04s;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:none}
+  .hint{
+    text-align:center;font-size:12px;font-weight:700;color:#64748b;
+    min-height:16px;
+  }
+  .hint b{color:#10B981}
+  .fallback-tag{color:#F97316}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head">
+    <div class="logo">💪</div>
+    <div>
+      <h1>Tilt-Лабиринт</h1>
+      <div class="sub">Наклоняй телефон · кати капибару к цели</div>
+    </div>
+  </div>
+
+  <div class="hud">
+    <div class="card c-pts"><div class="lbl">PushPoints</div><div class="val"><span class="em">⚡</span><span id="pts">0</span></div></div>
+    <div class="card c-coin"><div class="lbl">Монеты</div><div class="val"><span class="em">🪙</span><span id="coins">0</span>/<span id="coinsMax">4</span></div></div>
+    <div class="card c-streak"><div class="lbl">Стрик</div><div class="val"><span class="em">🔥</span><span id="streak">0</span></div></div>
+  </div>
+
+  <div class="arena-wrap">
+    <canvas id="game"></canvas>
+
+    <div class="overlay" id="startOv">
+      <img src="assets/coach-up.png" alt="Coach Up">
+      <h2>Задание дня</h2>
+      <p>Собери монеты и докати капибару-шарик до цели 🎯. Управляй <b>наклоном телефона</b>.</p>
+      <button class="btn" id="startBtn">Играть</button>
+    </div>
+
+    <div class="overlay hidden" id="winOv">
+      <img src="assets/coach-up.png" alt="Coach Up">
+      <h2>Готово! 🎉</h2>
+      <div class="win-line" id="winLine">Задание дня выполнено! +50 · стрик +1</div>
+      <button class="btn" id="againBtn">Ещё раз</button>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">Держи телефон ровно и слегка наклоняй</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var tg=window.Telegram&&window.Telegram.WebApp;
+  if(tg){try{tg.ready();tg.expand();}catch(e){}}
+  function haptic(kind){
+    try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred(kind||'light');}catch(e){}
+    try{navigator.vibrate&&navigator.vibrate(kind==='heavy'?30:12);}catch(e){}
+  }
+  function notify(t){ try{tg&&tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred(t||'success');}catch(e){} try{navigator.vibrate&&navigator.vibrate([20,40,20]);}catch(e){} }
+
+  // ---------- DOM ----------
+  var cv=document.getElementById('game'),ctx=cv.getContext('2d');
+  var elPts=document.getElementById('pts'),elCoins=document.getElementById('coins'),
+      elCoinsMax=document.getElementById('coinsMax'),elStreak=document.getElementById('streak'),
+      hint=document.getElementById('hint');
+  var startOv=document.getElementById('startOv'),winOv=document.getElementById('winOv'),
+      startBtn=document.getElementById('startBtn'),againBtn=document.getElementById('againBtn'),
+      winLine=document.getElementById('winLine');
+
+  // ---------- Mascot ----------
+  var mascot=new Image(),mascotOk=false;
+  mascot.onload=function(){mascotOk=true;};
+  mascot.src='assets/coach-up.png';
+
+  // ---------- State ----------
+  var PW=0,PH=0,pad=0,pf={x:0,y:0,w:0,h:0},velScale=0.05,dpr=1;
+  var wallsN=[
+    {x:0.00,y:0.22,w:0.68,h:0.055},
+    {x:0.32,y:0.44,w:0.68,h:0.055},
+    {x:0.00,y:0.66,w:0.68,h:0.055},
+    {x:0.32,y:0.88,w:0.68,h:0.055}
+  ];
+  var coinsN=[{x:0.86,y:0.12},{x:0.15,y:0.34},{x:0.86,y:0.56},{x:0.15,y:0.78}];
+  var startN={x:0.10,y:0.06}, goalN={x:0.17,y:0.955};
+
+  var walls=[],coins=[],goal={x:0,y:0},ball={x:0,y:0,vx:0,vy:0,r:10};
+  var pushPoints=0, coinsGot=0, streak=0, running=false, won=false;
+
+  elCoinsMax.textContent=coinsN.length;
+
+  // ---------- Control input ----------
+  var gx=0,gy=0;                 // smoothed sensor accel (m/s^2)
+  var useSensor=false, useFallback=false;
+  var fgx=0,fgy=0;               // fallback control vector
+  var motionCount=0;
+
+  function startSensors(){
+    if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+      DeviceMotionEvent.requestPermission().then(function(s){ s==='granted'?attach():fallback(); }).catch(fallback);
+    } else if(typeof DeviceMotionEvent!=='undefined'){
+      attach();
+    } else {
+      fallback();
+    }
+  }
+  function attach(){
+    useSensor=true; motionCount=0;
+    window.addEventListener('devicemotion', onMotion);
+    // watchdog: если данных нет — включаем тап-управление тоже
+    setTimeout(function(){ if(motionCount<3){ fallback(true); } },1600);
+    setHint(false);
+  }
+  function onMotion(ev){
+    motionCount++;
+    var a=ev.accelerationIncludingGravity; if(!a){a=ev.acceleration; if(!a)return;}
+    gx += 0.2*(((a.x||0))-gx);
+    gy += 0.2*(((a.y||0))-gy);
+  }
+  function fallback(keepSensor){
+    if(!keepSensor) useSensor=false;
+    useFallback=true;
+    setHint(true);
+  }
+  function setHint(fb){
+    if(fb){
+      hint.innerHTML='<span class="fallback-tag">Датчик недоступен — веди пальцем по экрану</span>';
+    } else {
+      hint.innerHTML='Наклоняй телефон — капибара покатится под уклон';
+    }
+  }
+
+  // fallback pointer (drag pulls the ball)
+  var ptrActive=false;
+  function ptrPos(e){
+    var r=cv.getBoundingClientRect();
+    var t=e.touches?e.touches[0]:e;
+    return {x:(t.clientX-r.left), y:(t.clientY-r.top)};
+  }
+  function ptrMove(e){
+    if(!useFallback||!running) return;
+    e.preventDefault();
+    var p=ptrPos(e);
+    var dx=p.x-ball.x, dy=p.y-ball.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+    var mag=Math.min(d/60,1)*9;
+    fgx=mag*dx/d; fgy=mag*dy/d;
+  }
+  function ptrEnd(){ ptrActive=false; fgx=0; fgy=0; }
+  cv.addEventListener('touchstart',function(e){ptrActive=true;ptrMove(e);},{passive:false});
+  cv.addEventListener('touchmove',ptrMove,{passive:false});
+  cv.addEventListener('touchend',ptrEnd);
+  cv.addEventListener('mousedown',function(e){ptrActive=true;ptrMove(e);});
+  cv.addEventListener('mousemove',function(e){if(ptrActive)ptrMove(e);});
+  window.addEventListener('mouseup',ptrEnd);
+
+  // ---------- Layout ----------
+  function layout(){
+    var rect=cv.getBoundingClientRect();
+    dpr=Math.max(1,Math.min(window.devicePixelRatio||1,3));
+    cv.width=Math.round(rect.width*dpr);
+    cv.height=Math.round(rect.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    var oldPW=PW,oldPH=PH;
+    PW=rect.width; PH=rect.height;
+    pad=Math.max(14,PW*0.05);
+    pf.x=pad; pf.y=pad; pf.w=PW-2*pad; pf.h=PH-2*pad;
+    velScale=pf.w*0.00013;
+    ball.r=pf.w*0.036;
+    // build px walls
+    walls=wallsN.map(function(w){
+      return {x:pf.x+w.x*pf.w, y:pf.y+w.y*pf.h, w:w.w*pf.w, h:w.h*pf.h};
+    });
+    coins=coins.length?coins:coinsN.map(function(c){return {x:0,y:0,r:0,got:false};});
+    coinsN.forEach(function(c,i){
+      coins[i].x=pf.x+c.x*pf.w; coins[i].y=pf.y+c.y*pf.h; coins[i].r=pf.w*0.032;
+    });
+    goal.x=pf.x+goalN.x*pf.w; goal.y=pf.y+goalN.y*pf.h; goal.r=pf.w*0.06;
+    // rescale ball position on resize, else place at start
+    if(oldPW>0 && running){
+      ball.x=pf.x + (ball.x-pf.x)*(pf.w/(oldPW-2*pad));
+      ball.y=pf.y + (ball.y-pf.y)*(pf.h/(oldPH-2*pad));
+    } else if(!running){
+      resetBallPos();
+    }
+  }
+  function resetBallPos(){
+    ball.x=pf.x+startN.x*pf.w; ball.y=pf.y+startN.y*pf.h; ball.vx=0; ball.vy=0;
+  }
+  window.addEventListener('resize',layout);
+
+  // ---------- Physics ----------
+  function step(){
+    var cx = useSensor ? gx : 0;
+    var cy = useSensor ? gy : 0;
+    if(useFallback){ cx += fgx; cy += fgy; }
+    // deadzone to avoid drift
+    if(Math.abs(cx)<0.35) cx=0;
+    if(Math.abs(cy)<0.35) cy=0;
+
+    ball.vx += cx*velScale;
+    ball.vy += cy*velScale;
+    ball.vx *= 0.92; ball.vy *= 0.92;
+    ball.x += ball.vx; ball.y += ball.vy;
+
+    // bounds
+    var r=ball.r, rest=0.35;
+    if(ball.x<pf.x+r){ball.x=pf.x+r; ball.vx=-ball.vx*rest;}
+    if(ball.x>pf.x+pf.w-r){ball.x=pf.x+pf.w-r; ball.vx=-ball.vx*rest;}
+    if(ball.y<pf.y+r){ball.y=pf.y+r; ball.vy=-ball.vy*rest;}
+    if(ball.y>pf.y+pf.h-r){ball.y=pf.y+pf.h-r; ball.vy=-ball.vy*rest;}
+
+    // walls
+    for(var i=0;i<walls.length;i++){ resolveWall(walls[i],rest); }
+
+    // coins
+    for(var j=0;j<coins.length;j++){
+      var c=coins[j]; if(c.got) continue;
+      var dx=ball.x-c.x, dy=ball.y-c.y;
+      if(dx*dx+dy*dy < (r+c.r*0.55)*(r+c.r*0.55)){
+        c.got=true; coinsGot++; pushPoints+=10;
+        elCoins.textContent=coinsGot; elPts.textContent=pushPoints;
+        haptic('light');
+      }
+    }
+    // goal
+    var gdx=ball.x-goal.x, gdy=ball.y-goal.y;
+    if(!won && gdx*gdx+gdy*gdy < (r+goal.r*0.6)*(r+goal.r*0.6)){
+      finish();
+    }
+  }
+  function resolveWall(w,rest){
+    var r=ball.r;
+    var cx=Math.max(w.x,Math.min(ball.x,w.x+w.w));
+    var cy=Math.max(w.y,Math.min(ball.y,w.y+w.h));
+    var dx=ball.x-cx, dy=ball.y-cy, d2=dx*dx+dy*dy;
+    if(d2 < r*r){
+      var d=Math.sqrt(d2);
+      var nx,ny;
+      if(d>0.0001){ nx=dx/d; ny=dy/d; }
+      else{ // center inside rect: push out along nearest edge
+        var left=ball.x-w.x, right=(w.x+w.w)-ball.x, top=ball.y-w.y, bot=(w.y+w.h)-ball.y;
+        var m=Math.min(left,right,top,bot);
+        if(m===left){nx=-1;ny=0;} else if(m===right){nx=1;ny=0;}
+        else if(m===top){nx=0;ny=-1;} else {nx=0;ny=1;}
+        d=0;
+      }
+      var overlap=r-d;
+      ball.x+=nx*overlap; ball.y+=ny*overlap;
+      var vn=ball.vx*nx+ball.vy*ny;
+      if(vn<0){ ball.vx-=(1+rest)*vn*nx; ball.vy-=(1+rest)*vn*ny; }
+    }
+  }
+
+  // ---------- Render ----------
+  var t0=performance.now();
+  function draw(now){
+    var pulse=0.5+0.5*Math.sin(now/380);
+    ctx.clearRect(0,0,PW,PH);
+
+    // subtle grid glow floor
+    ctx.save();
+    ctx.globalAlpha=0.12;
+    ctx.strokeStyle='#10B981';ctx.lineWidth=1;
+    var gs=pf.w/8;
+    for(var gx2=pf.x;gx2<=pf.x+pf.w+1;gx2+=gs){ctx.beginPath();ctx.moveTo(gx2,pf.y);ctx.lineTo(gx2,pf.y+pf.h);ctx.stroke();}
+    for(var gy2=pf.y;gy2<=pf.y+pf.h+1;gy2+=gs){ctx.beginPath();ctx.moveTo(pf.x,gy2);ctx.lineTo(pf.x+pf.w,gy2);ctx.stroke();}
+    ctx.restore();
+
+    // goal
+    ctx.save();
+    ctx.shadowColor='rgba(6,182,212,.9)';ctx.shadowBlur=18+pulse*10;
+    ctx.beginPath();ctx.arc(goal.x,goal.y,goal.r*(0.9+pulse*0.15),0,7);
+    ctx.strokeStyle='#06B6D4';ctx.lineWidth=3;ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.font=(goal.r*1.3)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🎯',goal.x,goal.y+1);
+    ctx.restore();
+
+    // walls (neon emerald)
+    for(var i=0;i<walls.length;i++){
+      var w=walls[i];
+      ctx.save();
+      ctx.shadowColor='rgba(16,185,129,.85)';ctx.shadowBlur=14;
+      ctx.fillStyle='#0e5f4a';
+      roundRect(w.x,w.y,w.w,w.h,w.h/2);ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(16,185,129,.9)';
+      roundRect(w.x+2,w.y+2,w.w-4,Math.max(2,w.h*0.28),w.h*0.14);ctx.fill();
+      ctx.restore();
+    }
+
+    // coins
+    for(var j=0;j<coins.length;j++){
+      var c=coins[j]; if(c.got) continue;
+      ctx.save();
+      var bob=Math.sin(now/300+j)*2;
+      ctx.shadowColor='rgba(234,179,8,.9)';ctx.shadowBlur=12+pulse*6;
+      ctx.beginPath();ctx.arc(c.x,c.y+bob,c.r*0.55,0,7);
+      var g=ctx.createRadialGradient(c.x-3,c.y-3+bob,1,c.x,c.y+bob,c.r*0.6);
+      g.addColorStop(0,'#FDE68A');g.addColorStop(1,'#EAB308');
+      ctx.fillStyle=g;ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.font=(c.r*0.7)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('🪙',c.x,c.y+bob+1);
+      ctx.restore();
+    }
+
+    // ball (capybara)
+    ctx.save();
+    ctx.shadowColor='rgba(16,185,129,.9)';ctx.shadowBlur=16;
+    ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,7);
+    ctx.fillStyle='#0a1016';ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.save();
+    ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r-2,0,7);ctx.clip();
+    if(mascotOk){
+      var s=ball.r*2.2;
+      ctx.drawImage(mascot,ball.x-s/2,ball.y-s/2,s,s);
+    }else{
+      ctx.fillStyle='#F97316';ctx.fillRect(ball.x-ball.r,ball.y-ball.r,ball.r*2,ball.r*2);
+    }
+    ctx.restore();
+    ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r-1,0,7);
+    ctx.lineWidth=3;ctx.strokeStyle='#10B981';ctx.stroke();
+    ctx.restore();
+
+    if(running) step();
+    requestAnimationFrame(draw);
+  }
+  function roundRect(x,y,w,h,r){
+    r=Math.min(r,w/2,h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  // ---------- Flow ----------
+  function newRound(){
+    coins.forEach(function(c){c.got=false;});
+    coinsGot=0; won=false;
+    // pushPoints keeps accumulating across rounds
+    elCoins.textContent='0';
+    resetBallPos();
+    ball.vx=0;ball.vy=0;
+    running=true;
+  }
+  function finish(){
+    won=true; running=false;
+    var bonus=50; pushPoints+=bonus; streak++;
+    elPts.textContent=pushPoints; elStreak.textContent=streak;
+    winLine.textContent='Задание дня выполнено! +'+bonus+' · стрик +1';
+    notify('success'); haptic('heavy');
+    winOv.classList.remove('hidden');
+  }
+
+  startBtn.addEventListener('click',function(){
+    startOv.classList.add('hidden');
+    layout();
+    startSensors();
+    newRound();
+  });
+  againBtn.addEventListener('click',function(){
+    winOv.classList.add('hidden');
+    layout();
+    newRound();
+    haptic('light');
+  });
+
+  // init
+  layout();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

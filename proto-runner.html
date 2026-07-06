@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>PushUp • Tilt-Раннер</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:#F4F7F6;color:#0f1b16;
+    font-family:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+    overflow:hidden;overscroll-behavior:none;
+  }
+  .app{
+    max-width:440px;margin:0 auto;min-height:100%;
+    display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 14px);
+    gap:12px;
+  }
+  header{display:flex;flex-direction:column;gap:2px;flex:0 0 auto;}
+  h1{margin:0;font-size:26px;font-weight:900;letter-spacing:-.5px;
+    display:flex;align-items:center;gap:8px;}
+  h1 .b{color:#10B981;}
+  .sub{margin:0;font-size:13px;font-weight:600;color:#5b6b64;}
+
+  .hud{display:flex;gap:10px;flex:0 0 auto;}
+  .card{
+    flex:1;background:#fff;border-radius:16px;padding:10px 12px;
+    box-shadow:0 6px 0 0 #D6DEDA;display:flex;flex-direction:column;gap:1px;
+  }
+  .card .lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#8a998f;}
+  .card .val{font-size:22px;font-weight:900;line-height:1;display:flex;align-items:baseline;gap:4px;}
+  .card .u{font-size:12px;font-weight:800;color:#98a69d;}
+  .card.dist .val{color:#06B6D4;}
+  .card.coin .val{color:#EAB308;}
+
+  .arena{
+    position:relative;flex:1 1 auto;min-height:320px;
+    border-radius:28px;overflow:hidden;
+    background:radial-gradient(120% 100% at 50% 30%,#12303a,#0a1016 72%);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.5), 0 8px 0 0 #cfd8d3;
+  }
+  canvas{display:block;width:100%;height:100%;}
+
+  .overlay{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:14px;text-align:center;
+    padding:22px;background:rgba(6,12,16,.55);backdrop-filter:blur(3px);
+  }
+  .overlay.hidden{display:none;}
+  .overlay h2{margin:0;font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+  .overlay p{margin:0;font-size:14px;font-weight:600;color:#bcd; max-width:280px;line-height:1.4;}
+  .mascot{width:96px;height:96px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4));}
+  .stats{display:flex;gap:12px;margin-top:2px;}
+  .stat{background:rgba(255,255,255,.08);border-radius:14px;padding:8px 14px;min-width:78px;}
+  .stat .lbl{font-size:10px;font-weight:800;text-transform:uppercase;color:#9fb3ab;letter-spacing:.5px;}
+  .stat .val{font-size:20px;font-weight:900;color:#fff;}
+  .stat.rec .val{color:#EAB308;}
+
+  .btn{
+    -webkit-appearance:none;appearance:none;border:0;cursor:pointer;
+    background:linear-gradient(135deg,#10B981,#06B6D4);color:#fff;
+    font-family:inherit;font-weight:900;font-size:18px;letter-spacing:.3px;
+    padding:15px 30px;border-radius:20px;box-shadow:0 4px 0 0 #059669;
+    transition:transform .04s, box-shadow .04s;touch-action:manipulation;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:none;}
+  .btn.ghost{background:rgba(255,255,255,.1);box-shadow:0 4px 0 0 rgba(0,0,0,.35);}
+  .btn.ghost:active{box-shadow:none;}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .note{font-size:12px;font-weight:700;color:#F97316;}
+  .tag{font-size:11px;font-weight:800;color:#10B981;background:rgba(16,185,129,.12);
+    padding:4px 10px;border-radius:999px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>🅱️ <span class="b">Tilt</span>-Раннер</h1>
+    <p class="sub">Капибара бежит — <b>наклоняй телефон</b>, руль влево-вправо</p>
+  </header>
+
+  <div class="hud">
+    <div class="card dist"><span class="lbl">Дистанция</span><span class="val" id="hudDist">0<span class="u">м</span></span></div>
+    <div class="card coin"><span class="lbl">PushPoints</span><span class="val" id="hudCoin">0<span class="u">🪙</span></span></div>
+  </div>
+
+  <div class="arena">
+    <canvas id="cv"></canvas>
+
+    <div class="overlay" id="ovStart">
+      <img class="mascot" id="mascot" src="assets/coach-up.png" alt="">
+      <span class="tag">endless • наклон-руль</span>
+      <h2>Готов бежать?</h2>
+      <p>Держи телефон вертикально и <b>наклоняй влево-вправо</b>, чтобы объезжать красные блоки. Лови золотые монеты.</p>
+      <button class="btn" id="btnStart">Играть ▶</button>
+      <span class="note" id="startNote"></span>
+    </div>
+
+    <div class="overlay hidden" id="ovOver">
+      <h2>💥 Врезался!</h2>
+      <div class="stats">
+        <div class="stat"><div class="lbl">Дистанция</div><div class="val" id="ovDist">0м</div></div>
+        <div class="stat"><div class="lbl">Монеты</div><div class="val" id="ovCoin">0</div></div>
+        <div class="stat rec"><div class="lbl">🏆 Рекорд</div><div class="val" id="ovRec">0м</div></div>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="btnAgain">Ещё раз ↻</button>
+        <button class="btn ghost" id="btnFriend">Позвать друга 🤝</button>
+      </div>
+      <span class="note" id="overNote"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if(tg){ try{ tg.ready(); tg.expand(); }catch(e){} }
+  function haptic(kind){
+    try{ if(tg&&tg.HapticFeedback){ if(kind==='hit'){tg.HapticFeedback.notificationOccurred('error');} else {tg.HapticFeedback.impactOccurred(kind||'light');} } }catch(e){}
+    try{ if(navigator.vibrate){ navigator.vibrate(kind==='hit'?[30,40,30]:8); } }catch(e){}
+  }
+
+  var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+  var W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2.5);
+  function resize(){
+    var r=cv.getBoundingClientRect();
+    W=r.width; H=r.height;
+    cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize',resize);
+
+  // mascot fallback
+  var mascotImg=document.getElementById('mascot');
+  var mascotOK=false;
+  var runnerImg=new Image();
+  runnerImg.onload=function(){mascotOK=true;};
+  runnerImg.onerror=function(){mascotOK=false; mascotImg.style.display='none';};
+  runnerImg.src='assets/coach-up.png';
+
+  // ---- sensor ----
+  var gx=0, gy=0, sensorOn=false, tilting=false;
+  function onMotion(ev){
+    var a=ev.accelerationIncludingGravity; if(!a){ a=ev.acceleration; if(!a) return; }
+    gx += 0.2*((a.x||0)-gx);
+    gy += 0.2*((a.y||0)-gy);
+  }
+  function attach(){ window.addEventListener('devicemotion',onMotion); sensorOn=true; tilting=true; }
+  function fallback(){
+    sensorOn=false; tilting=false;
+    setNote('датчик недоступен — рули пальцем: тапни/веди по левой или правой половине');
+    enableTouchSteer();
+  }
+  function startSensors(){
+    if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+      DeviceMotionEvent.requestPermission().then(function(s){ s==='granted'?attach():fallback(); }).catch(fallback);
+    } else if(typeof DeviceMotionEvent!=='undefined'){
+      attach();
+    } else {
+      fallback();
+    }
+  }
+  function setNote(t){ document.getElementById('startNote').textContent=t; document.getElementById('overNote').textContent=t; }
+
+  // touch steering fallback + assist
+  var touchDir=0, touchActive=false;
+  function enableTouchSteer(){/* handlers already bound globally */}
+  function touchAt(clientX){
+    var r=cv.getBoundingClientRect();
+    var rel=(clientX-r.left)/r.width; // 0..1
+    touchDir=(rel-0.5)*2; // -1..1
+  }
+  cv.addEventListener('touchstart',function(e){ touchActive=true; touchAt(e.touches[0].clientX); },{passive:true});
+  cv.addEventListener('touchmove',function(e){ touchActive=true; touchAt(e.touches[0].clientX); },{passive:true});
+  cv.addEventListener('touchend',function(){ touchActive=false; touchDir=0; },{passive:true});
+  cv.addEventListener('mousedown',function(e){ touchActive=true; touchAt(e.clientX); });
+  window.addEventListener('mousemove',function(e){ if(touchActive) touchAt(e.clientX); });
+  window.addEventListener('mouseup',function(){ touchActive=false; touchDir=0; });
+
+  // ---- game state ----
+  var running=false, over=false;
+  var player, obstacles, coins, dashOffset, speed, dist, coinCount, spawnT, tPrev, roadPad;
+  var best=0;
+  try{ best=parseInt(localStorage.getItem('pushup_tilt_best')||'0',10)||0; }catch(e){}
+
+  function reset(){
+    roadPad=Math.max(14, W*0.06);
+    player={ x:W/2, y:H-70, w:44, h:52 };
+    obstacles=[]; coins=[];
+    dashOffset=0; speed=170; dist=0; coinCount=0; spawnT=0;
+    tPrev=performance.now();
+  }
+
+  function spawn(){
+    var laneW=(W-roadPad*2);
+    // obstacle
+    if(Math.random()<0.72){
+      var ow=38+Math.random()*46;
+      var ox=roadPad+Math.random()*(laneW-ow);
+      obstacles.push({x:ox,y:-60,w:ow,h:26+Math.random()*18});
+    }
+    // coin (offset so usually reachable)
+    if(Math.random()<0.85){
+      var cx=roadPad+16+Math.random()*(laneW-32);
+      coins.push({x:cx,y:-140-Math.random()*80,r:11,got:false});
+    }
+  }
+
+  function update(dt){
+    speed += dt*7;                 // разгон
+    var move=speed*dt;
+    dist += move/26;               // «метры»
+    dashOffset=(dashOffset+move)%46;
+
+    // steering input
+    var steer=0;
+    if(sensorOn){ steer=Math.max(-1,Math.min(1, gx*0.42)); }   // gx>0 -> вправо
+    else if(touchActive){ steer=Math.max(-1,Math.min(1,touchDir)); }
+    player.x += steer*360*dt;
+    var minX=roadPad+player.w/2, maxX=W-roadPad-player.w/2;
+    if(player.x<minX)player.x=minX; if(player.x>maxX)player.x=maxX;
+
+    // spawn timing
+    spawnT-=dt;
+    var interval=Math.max(0.42, 0.95 - dist/900);
+    if(spawnT<=0){ spawn(); spawnT=interval; }
+
+    var i;
+    for(i=obstacles.length-1;i>=0;i--){
+      var o=obstacles[i]; o.y+=move;
+      if(o.y>H+40){ obstacles.splice(i,1); continue; }
+      // collision AABB vs player box
+      if(o.y+o.h>player.y-player.h/2 && o.y<player.y+player.h/2){
+        if(o.x+o.w>player.x-player.w/2+6 && o.x<player.x+player.w/2-6){
+          gameOver(); return;
+        }
+      }
+    }
+    for(i=coins.length-1;i>=0;i--){
+      var c=coins[i]; c.y+=move;
+      if(c.y>H+30){ coins.splice(i,1); continue; }
+      if(!c.got){
+        var dx=c.x-player.x, dy=c.y-player.y;
+        if(dx*dx+dy*dy < (c.r+22)*(c.r+22)){
+          c.got=true; coins.splice(i,1); coinCount++;
+          haptic('light');
+        }
+      }
+    }
+    document.getElementById('hudDist').innerHTML=Math.floor(dist)+'<span class="u">м</span>';
+    document.getElementById('hudCoin').innerHTML=coinCount+'<span class="u">🪙</span>';
+  }
+
+  function drawRoad(){
+    ctx.clearRect(0,0,W,H);
+    // road edges neon
+    ctx.save();
+    ctx.strokeStyle='rgba(16,185,129,.85)'; ctx.lineWidth=4; ctx.shadowColor='#10B981'; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.moveTo(roadPad,0); ctx.lineTo(roadPad,H);
+    ctx.moveTo(W-roadPad,0); ctx.lineTo(W-roadPad,H); ctx.stroke();
+    // center dashed cyan
+    ctx.strokeStyle='rgba(6,182,212,.8)'; ctx.shadowColor='#06B6D4'; ctx.lineWidth=5;
+    ctx.setLineDash([22,24]); ctx.lineDashOffset=-dashOffset;
+    ctx.beginPath(); ctx.moveTo(W/2,0); ctx.lineTo(W/2,H); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawCapy(x,y,w,h){
+    if(mascotOK){
+      ctx.drawImage(runnerImg, x-w/2, y-h/2, w, h);
+      return;
+    }
+    // fallback capybara-ish blob
+    ctx.save();
+    ctx.fillStyle='#b07a3f';
+    ctx.beginPath(); ctx.ellipse(x,y,w/2,h/2,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#8a5c2a';
+    ctx.beginPath(); ctx.ellipse(x,y-h*0.32,w*0.34,h*0.24,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1b1b1b';
+    ctx.beginPath(); ctx.arc(x-w*0.14,y-h*0.34,2.6,0,7); ctx.arc(x+w*0.14,y-h*0.34,2.6,0,7); ctx.fill();
+    ctx.restore();
+  }
+
+  function draw(){
+    drawRoad();
+    var i;
+    // obstacles
+    for(i=0;i<obstacles.length;i++){
+      var o=obstacles[i];
+      ctx.save();
+      ctx.fillStyle='#e2413a'; ctx.shadowColor='#ff5a4d'; ctx.shadowBlur=14;
+      roundRect(o.x,o.y,o.w,o.h,7); ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.18)';
+      roundRect(o.x,o.y,o.w,o.h*0.4,7); ctx.fill();
+      ctx.restore();
+    }
+    // coins
+    for(i=0;i<coins.length;i++){
+      var c=coins[i];
+      ctx.save();
+      ctx.fillStyle='#EAB308'; ctx.shadowColor='#facc15'; ctx.shadowBlur=14;
+      ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#7a5c00'; ctx.font='bold 12px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowBlur=0; ctx.fillText('P',c.x,c.y+1);
+      ctx.restore();
+    }
+    // player
+    drawCapy(player.x, player.y, player.w, player.h);
+    // little speed streaks
+    ctx.save(); ctx.strokeStyle='rgba(255,255,255,.10)'; ctx.lineWidth=2;
+    for(i=0;i<6;i++){ var sx=roadPad+ ((i*57+dashOffset*3)% (W-roadPad*2)); ctx.beginPath(); ctx.moveTo(sx,(dashOffset*4)%H); ctx.lineTo(sx,(dashOffset*4)%H+26); ctx.stroke(); }
+    ctx.restore();
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+
+  function loop(now){
+    if(!running) return;
+    var dt=(now-tPrev)/1000; if(dt>0.05)dt=0.05; tPrev=now;
+    update(dt);
+    if(running){ draw(); requestAnimationFrame(loop); }
+  }
+
+  function startGame(){
+    resize(); reset();
+    document.getElementById('ovStart').classList.add('hidden');
+    document.getElementById('ovOver').classList.add('hidden');
+    running=true; over=false;
+    tPrev=performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  function gameOver(){
+    running=false; over=true;
+    haptic('hit');
+    var d=Math.floor(dist);
+    if(d>best){ best=d; try{localStorage.setItem('pushup_tilt_best',String(best));}catch(e){} }
+    document.getElementById('ovDist').textContent=d+'м';
+    document.getElementById('ovCoin').textContent=coinCount;
+    document.getElementById('ovRec').textContent=best+'м';
+    document.getElementById('ovOver').classList.remove('hidden');
+  }
+
+  // buttons
+  document.getElementById('btnStart').addEventListener('click',function(){
+    haptic('medium');
+    startSensors();          // user gesture -> iOS permission
+    startGame();
+  });
+  document.getElementById('btnAgain').addEventListener('click',function(){
+    haptic('medium'); startGame();
+  });
+  document.getElementById('btnFriend').addEventListener('click',function(){
+    haptic('light');
+    var d=Math.floor(dist);
+    var txt='Я пробежал '+d+'м в PushUp Tilt-Раннере 🅱️ Догонишь?';
+    try{
+      if(tg&&tg.openTelegramLink){
+        tg.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent('https://t.me/PushUpBot')+'&text='+encodeURIComponent(txt));
+      } else {
+        this.textContent='Приглашение готово ✓';
+      }
+    }catch(e){ this.textContent='Приглашение готово ✓'; }
+  });
+
+  resize();
+})();
+</script>
+</body>
+</html>

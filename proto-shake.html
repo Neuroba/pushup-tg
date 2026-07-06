@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>PushUp — Встряхни Фонд</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+  :root{
+    --bg:#F4F7F6;--emerald:#10B981;--orange:#F97316;--gold:#EAB308;--cyan:#06B6D4;
+    --ink:#0f2a22;--card:#ffffff;--cardsh:0 6px 0 0 #D6DEDA;
+    --sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom);
+  }
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+    overflow-x:hidden;overscroll-behavior:none;
+  }
+  .app{
+    max-width:440px;margin:0 auto;min-height:100vh;min-height:100dvh;
+    display:flex;flex-direction:column;
+    padding:calc(12px + var(--sat)) 14px calc(14px + var(--sab));
+    gap:12px;
+  }
+  header{text-align:center;padding-top:4px}
+  h1{font-weight:900;font-size:26px;letter-spacing:-.5px;line-height:1.05}
+  h1 .em{color:var(--emerald)}
+  .sub{font-size:13px;color:#5b6f68;font-weight:600;margin-top:3px}
+
+  .hud{display:flex;gap:10px}
+  .card{
+    background:var(--card);border-radius:18px;box-shadow:var(--cardsh);
+    padding:10px 12px;flex:1;text-align:center;
+  }
+  .card .lbl{font-size:11px;font-weight:800;color:#8a998f;text-transform:uppercase;letter-spacing:.5px}
+  .card .val{font-size:24px;font-weight:900;line-height:1.1;margin-top:2px}
+  .card.pts .val{color:var(--gold)}
+  .card.swings .val{color:var(--cyan)}
+  .card.timer .val{color:var(--orange)}
+
+  .energy-wrap{
+    background:var(--card);border-radius:18px;box-shadow:var(--cardsh);padding:11px 13px;
+  }
+  .energy-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+  .energy-top .t{font-size:12px;font-weight:800;color:#5b6f68}
+  .energy-top .p{font-size:12px;font-weight:900;color:var(--emerald)}
+  .bar{height:14px;border-radius:10px;background:#e6ece9;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.08)}
+  .bar>i{
+    display:block;height:100%;width:0%;border-radius:10px;
+    background:linear-gradient(90deg,var(--emerald),var(--cyan));
+    transition:width .18s cubic-bezier(.2,.9,.3,1.3);
+  }
+
+  .arena{
+    position:relative;flex:1;min-height:320px;border-radius:28px;overflow:hidden;
+    background:radial-gradient(120% 100% at 50% 30%,#12303a,#0a1016 72%);
+    box-shadow:inset 0 2px 20px rgba(0,0,0,.4);
+    display:flex;align-items:flex-end;justify-content:center;
+  }
+  /* пол / линия арены */
+  .floor{position:absolute;left:0;right:0;bottom:0;height:44%;
+    background:linear-gradient(180deg,rgba(16,185,129,0) 0%,rgba(16,185,129,.06) 60%,rgba(16,185,129,.14) 100%);}
+  .floorline{position:absolute;left:8%;right:8%;bottom:19%;height:3px;border-radius:3px;
+    background:linear-gradient(90deg,transparent,rgba(6,182,212,.6),transparent);}
+  .grid{position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 40px),
+      repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 40px);
+    mask-image:radial-gradient(70% 60% at 50% 55%,#000,transparent);}
+
+  /* капибара */
+  .stage{position:absolute;left:50%;bottom:19%;transform:translateX(-50%);will-change:transform}
+  .capy{position:relative;transform-origin:50% 100%}
+  .capy img{width:150px;display:block;filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
+  .shadow{
+    position:absolute;left:50%;bottom:17%;transform:translateX(-50%);
+    width:120px;height:22px;border-radius:50%;
+    background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.5),transparent 70%);
+    transition:transform .04s linear,opacity .04s linear;z-index:0;
+  }
+  .stage{z-index:2}
+
+  /* вспышка при взмахе */
+  .flash{position:absolute;left:50%;top:50%;width:220px;height:220px;transform:translate(-50%,-50%) scale(.2);
+    border-radius:50%;pointer-events:none;opacity:0;z-index:1;
+    background:radial-gradient(circle,rgba(234,179,8,.55),rgba(16,185,129,.15) 45%,transparent 65%);}
+  .flash.go{animation:flash .38s ease-out}
+  @keyframes flash{0%{opacity:.9;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.3)}}
+
+  .spark{position:absolute;width:9px;height:9px;border-radius:50%;pointer-events:none;z-index:3;
+    box-shadow:0 0 8px currentColor}
+
+  /* центральная подсказка */
+  .hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:4;
+    background:rgba(10,16,22,.55);backdrop-filter:blur(4px);
+    color:#dff6ee;font-weight:800;font-size:13px;padding:7px 14px;border-radius:14px;
+    border:1px solid rgba(255,255,255,.08);white-space:nowrap;text-align:center}
+  .hint.warn{color:#ffd9b8}
+
+  /* оверлей результата */
+  .overlay{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;
+    align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;
+    background:rgba(8,14,20,.82);backdrop-filter:blur(3px)}
+  .overlay.show{display:flex}
+  .overlay .big{font-size:30px;font-weight:900;color:#fff;line-height:1.1}
+  .overlay .em{color:var(--emerald)}
+  .overlay .rew{font-size:17px;font-weight:800;color:var(--gold)}
+  .overlay .rew2{font-size:13px;color:#9fb4ac;font-weight:600}
+
+  .btn{
+    -webkit-appearance:none;appearance:none;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--emerald),var(--cyan));color:#fff;
+    font-weight:900;font-size:19px;border-radius:20px;padding:17px 20px;
+    box-shadow:0 4px 0 0 #059669;transition:transform .04s,box-shadow .04s;
+    font-family:inherit;letter-spacing:.2px;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:none}
+  .btn.ghost{background:linear-gradient(135deg,#334b44,#233b34);box-shadow:0 4px 0 0 #16261f;font-size:16px}
+  .btn:disabled{opacity:.5}
+
+  .footnote{text-align:center;font-size:11.5px;color:#8a998f;font-weight:600;min-height:15px}
+  .footnote.tap{color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Встряхни <span class="em">Фонд</span> 💪</h1>
+    <div class="sub">Резкий взмах телефоном = капибара подпрыгивает</div>
+  </header>
+
+  <div class="hud">
+    <div class="card swings"><div class="lbl">Взмахов</div><div class="val" id="swings">0</div></div>
+    <div class="card timer"><div class="lbl">Секунд</div><div class="val" id="timer">20</div></div>
+    <div class="card pts"><div class="lbl">PushPoints</div><div class="val" id="pts">0</div></div>
+  </div>
+
+  <div class="energy-wrap">
+    <div class="energy-top"><span class="t">Энергия фонда</span><span class="p" id="epct">0%</span></div>
+    <div class="bar"><i id="ebar"></i></div>
+  </div>
+
+  <div class="arena" id="arena">
+    <div class="grid"></div>
+    <div class="floor"></div>
+    <div class="floorline"></div>
+    <div class="hint" id="hint">Цель: 15 взмахов за 20 сек</div>
+    <div class="flash" id="flash"></div>
+    <div class="shadow" id="shadow"></div>
+    <div class="stage" id="stage">
+      <div class="capy" id="capy"><img src="assets/coach-up.png" alt="капибара-тренер"></div>
+    </div>
+    <div class="overlay" id="overlay">
+      <div class="big" id="ovTitle">Фонд встряхнут!</div>
+      <div class="rew" id="ovRew">+120 PushPoints</div>
+      <div class="rew2" id="ovRew2">15 взмахов за 20 секунд</div>
+    </div>
+  </div>
+
+  <button class="btn" id="startBtn">▶ Играть</button>
+  <div class="footnote" id="foot">Нажми «Играть» — потом резко взмахни телефоном вверх</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if(tg){try{tg.ready();tg.expand();}catch(e){}}
+
+  function haptic(kind){
+    try{ if(tg&&tg.HapticFeedback){ if(kind==='big'){tg.HapticFeedback.impactOccurred('rigid');} else {tg.HapticFeedback.impactOccurred('light');} } }catch(e){}
+    try{ navigator.vibrate && navigator.vibrate(kind==='big'?30:12); }catch(e){}
+  }
+  function hapticSuccess(){
+    try{ tg&&tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
+    try{ navigator.vibrate && navigator.vibrate([20,40,60]); }catch(e){}
+  }
+
+  // --- DOM ---
+  var $=function(id){return document.getElementById(id);};
+  var stage=$('stage'), capy=$('capy'), shadow=$('shadow'), flash=$('flash'), arena=$('arena');
+  var elSwings=$('swings'), elTimer=$('timer'), elPts=$('pts'), elEbar=$('ebar'), elEpct=$('epct');
+  var hint=$('hint'), foot=$('foot'), startBtn=$('startBtn');
+  var overlay=$('overlay'), ovTitle=$('ovTitle'), ovRew=$('ovRew'), ovRew2=$('ovRew2');
+
+  // --- параметры игры ---
+  var GOAL=15, DURATION=20, PEAK=7, DEBOUNCE=320;
+
+  // --- состояние ---
+  var running=false, useTap=false;
+  var swings=0, points=0, energy=0, timeLeft=DURATION;
+  var y=0, vy=0;              // высота капибары над полом (px) и скорость
+  var squash=1;              // сжатие/растяжение
+  var gx=0, gy=0;            // сглаженный наклон (не используется для механики, задел телесности)
+  var lastPeak=0, timerId=null, rafId=null, sparks=[];
+  var GRAV=2400;             // px/s^2
+
+  function reset(){
+    swings=0;points=0;energy=0;timeLeft=DURATION;y=0;vy=0;squash=1;
+    render();
+    elTimer.textContent=DURATION;
+  }
+
+  function render(){
+    elSwings.textContent=swings;
+    elPts.textContent=points;
+    var pct=Math.max(0,Math.min(100,Math.round(energy)));
+    elEbar.style.width=pct+'%';
+    elEpct.textContent=pct+'%';
+  }
+
+  // --- один взмах ---
+  function doSwing(){
+    if(!running) return;
+    swings++;
+    // подброс — импульс вверх, чуть выше при слабой текущей высоте
+    vy = 1150 + Math.random()*140;
+    squash = 1.28; // растяжение вверх
+    // энергия и очки
+    energy = Math.min(100, energy + 100/GOAL + 1.5);
+    points += 3;
+    render();
+    haptic('big');
+    triggerFlash();
+    burstSparks();
+    if(swings>=GOAL && energy>=100-0.5){ /* цель по взмахам */ }
+    if(swings>=GOAL){ win(); }
+  }
+
+  function triggerFlash(){
+    flash.classList.remove('go');
+    // reflow
+    void flash.offsetWidth;
+    flash.classList.add('go');
+  }
+
+  var COLORS=['#EAB308','#10B981','#06B6D4','#F97316','#ffffff'];
+  function burstSparks(){
+    var n=10;
+    for(var i=0;i<n;i++){
+      var s=document.createElement('div');
+      s.className='spark';
+      var c=COLORS[(Math.random()*COLORS.length)|0];
+      s.style.color=c;s.style.background=c;
+      var ang=(-Math.PI/2)+(Math.random()-0.5)*2.2;
+      var spd=180+Math.random()*220;
+      var life=0.5+Math.random()*0.35;
+      arena.appendChild(s);
+      sparks.push({el:s,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,life:life,age:0});
+    }
+  }
+
+  // --- главный цикл (физика прыжка + частицы) ---
+  var lastT=0;
+  function loop(t){
+    if(!lastT)lastT=t;
+    var dt=Math.min(0.05,(t-lastT)/1000); lastT=t;
+
+    // прыжок
+    if(y>0 || vy!==0){
+      vy -= GRAV*dt;
+      y += vy*dt;
+      if(y<=0){ y=0; if(vy<-100){ squash=0.72; } vy=0; }
+    }
+    // возврат squash к 1
+    squash += (1-squash)*Math.min(1,dt*10);
+
+    var stretchY=squash, stretchX=1+(1-squash)*0.55;
+    stage.style.transform='translateX(-50%) translateY('+(-y)+'px)';
+    capy.style.transform='scaleX('+stretchX+') scaleY('+stretchY+')';
+    // тень уменьшается с высотой
+    var sh=Math.max(0.25,1-y/260);
+    shadow.style.transform='translateX(-50%) scaleX('+sh+') scaleY('+sh+')';
+    shadow.style.opacity=String(0.35+sh*0.5);
+
+    // частицы (в координатах арены, старт из центра сцены)
+    var cx=arena.clientWidth/2, cy=arena.clientHeight*0.58 - y;
+    for(var i=sparks.length-1;i>=0;i--){
+      var p=sparks[i];
+      if(p.age===0){ p.x=cx;p.y=cy; }
+      p.age+=dt;
+      p.vy+=900*dt;
+      p.x+=p.vx*dt; p.y+=p.vy*dt;
+      var k=1-p.age/p.life;
+      if(k<=0){ p.el.remove(); sparks.splice(i,1); continue; }
+      p.el.style.left=p.x+'px';
+      p.el.style.top=p.y+'px';
+      p.el.style.opacity=String(k);
+      p.el.style.transform='translate(-50%,-50%) scale('+(0.4+k)+')';
+    }
+
+    rafId=requestAnimationFrame(loop);
+  }
+
+  // --- таймер ---
+  function tick(){
+    if(!running)return;
+    timeLeft--;
+    elTimer.textContent=Math.max(0,timeLeft);
+    if(timeLeft<=5) hint.classList.add('warn');
+    if(timeLeft<=0){ endGame(); }
+  }
+
+  // --- завершение ---
+  function win(){
+    if(!running)return;
+    finish(true);
+  }
+  function endGame(){
+    if(!running)return;
+    finish(swings>=GOAL);
+  }
+  function finish(success){
+    running=false;
+    if(timerId){clearInterval(timerId);timerId=null;}
+    window.removeEventListener('devicemotion',onMotion);
+    var bonus = success ? (100 + swings*2 + Math.round(energy)) : swings*2;
+    points += bonus;
+    render();
+    if(success){
+      hapticSuccess();
+      ovTitle.innerHTML='Фонд <span class="em">встряхнут!</span> 🎉';
+      ovRew.textContent='+'+bonus+' PushPoints';
+      ovRew2.textContent=swings+' взмахов за '+(DURATION-Math.max(0,timeLeft))+' сек';
+    }else{
+      ovTitle.innerHTML='Время вышло';
+      ovRew.textContent='+'+bonus+' PushPoints';
+      ovRew2.textContent='Взмахов: '+swings+' из '+GOAL+' — почти!';
+    }
+    overlay.classList.add('show');
+    startBtn.textContent='▶ Ещё раз';
+    startBtn.disabled=false;
+    foot.textContent = useTap ? 'датчик недоступен — играй тапом по арене' : 'Держи телефон крепко и взмахивай от плеча';
+  }
+
+  // --- старт ---
+  function startGame(){
+    overlay.classList.remove('show');
+    hint.classList.remove('warn');
+    reset();
+    running=true;
+    lastPeak=0;
+    hint.textContent = useTap ? 'Тапай по арене — резче!' : 'Взмахни! Цель: '+GOAL+' раз';
+    startBtn.textContent='Идёт игра…';
+    startBtn.disabled=true;
+    if(timerId)clearInterval(timerId);
+    timerId=setInterval(tick,1000);
+    if(!rafId){ lastT=0; rafId=requestAnimationFrame(loop); }
+  }
+
+  // --- датчик движения ---
+  function startSensors(){
+    if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+      DeviceMotionEvent.requestPermission().then(function(s){ s==='granted'?attach():fallback(); }).catch(fallback);
+    } else if(typeof DeviceMotionEvent!=='undefined'){
+      attach();
+    } else {
+      fallback();
+    }
+  }
+  function attach(){
+    useTap=false;
+    foot.classList.remove('tap');
+    foot.textContent='Датчик активен — резко взмахни телефоном вверх';
+    window.addEventListener('devicemotion', onMotion);
+    startGame();
+  }
+  function fallback(){
+    useTap=true;
+    foot.classList.add('tap');
+    foot.textContent='датчик недоступен — играй тапом по арене';
+    startGame();
+  }
+
+  function onMotion(ev){
+    var a=ev.accelerationIncludingGravity;
+    var lin;
+    if(!a){
+      a=ev.acceleration;
+      if(!a)return;
+      // это уже линейное ускорение (без гравитации)
+      lin=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
+    } else {
+      // сглаженный наклон (задел телесности, гравитация 1g)
+      gx += 0.2*((a.x||0)-gx);
+      gy += 0.2*((a.y||0)-gy);
+      // линейная величина = модуль минус g
+      var m=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
+      lin=Math.abs(m-9.8);
+    }
+    var now=Date.now();
+    if(lin>PEAK && (now-lastPeak)>DEBOUNCE){
+      lastPeak=now;
+      doSwing();
+    }
+  }
+
+  // --- tap fallback: тап/свайп по арене = взмах ---
+  function tapSwing(e){
+    if(!running || !useTap)return;
+    var now=Date.now();
+    if(now-lastPeak>120){ lastPeak=now; doSwing(); }
+    if(e.cancelable)e.preventDefault();
+  }
+  arena.addEventListener('touchstart', tapSwing, {passive:false});
+  arena.addEventListener('mousedown', tapSwing);
+
+  // --- кнопка ---
+  startBtn.addEventListener('click', function(){
+    haptic('light');
+    // первый запуск — просим датчик (обязательно из user-gesture)
+    startSensors();
+  });
+
+  // init
+  reset();
+})();
+</script>
+</body>
+</html>

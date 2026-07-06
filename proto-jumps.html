@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PushUp · Прыжки/Приседания</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{height:100%}
+body{
+  background:#F4F7F6;
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+  color:#0f2a24;overflow:hidden;
+}
+.app{
+  max-width:440px;margin:0 auto;height:100%;display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 14px);
+  gap:12px;
+}
+h1{font-size:23px;font-weight:900;line-height:1.05;letter-spacing:-.02em}
+.sub{font-size:12.5px;color:#5c7269;margin-top:3px;font-weight:600;line-height:1.3}
+.hud{display:flex;gap:10px}
+.card{
+  background:#fff;border-radius:18px;padding:11px 14px;flex:1;
+  box-shadow:0 6px 0 0 #D6DEDA;text-align:center;
+}
+.card .lbl{font-size:10.5px;font-weight:800;color:#8496a0;text-transform:uppercase;letter-spacing:.06em}
+.card .val{font-size:22px;font-weight:900;margin-top:2px}
+.val .g{color:#10B981}
+.arena{
+  flex:1;min-height:320px;position:relative;border-radius:28px;overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 30%,#12303a,#0a1016 72%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 12px 30px rgba(10,16,22,.35);
+}
+.floor{position:absolute;left:0;right:0;bottom:0;height:34%;
+  background:radial-gradient(90% 120% at 50% 0%,rgba(16,185,129,.18),transparent 70%)}
+.ringWrap{position:relative;width:250px;height:250px;display:flex;align-items:center;justify-content:center}
+svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring .bg{fill:none;stroke:rgba(255,255,255,.10);stroke-width:11}
+.ring .fg{fill:none;stroke:url(#grad);stroke-width:11;stroke-linecap:round;
+  stroke-dasharray:691;stroke-dashoffset:691;transition:stroke-dashoffset .35s cubic-bezier(.2,.8,.2,1)}
+.capWrap{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;
+  transition:transform .28s cubic-bezier(.2,1.5,.4,1)}
+.capWrap img{width:150px;height:auto;display:block;filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
+.capWrap.pop{animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{}40%{transform:translateY(-14px) rotate(-3deg)}100%{}}
+.repBig{position:absolute;top:14px;left:0;right:0;text-align:center;z-index:3;pointer-events:none}
+.repBig .n{font-size:56px;font-weight:900;color:#fff;line-height:1;text-shadow:0 3px 12px rgba(0,0,0,.4)}
+.repBig .of{font-size:15px;font-weight:800;color:rgba(255,255,255,.6);margin-top:2px}
+.hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:3;
+  font-size:12.5px;font-weight:700;color:rgba(255,255,255,.72);padding:0 20px;pointer-events:none}
+.plus{position:absolute;z-index:4;font-size:30px;font-weight:900;color:#EAB308;pointer-events:none;
+  animation:fly .7s ease-out forwards;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+@keyframes fly{0%{opacity:0;transform:translateY(10px) scale(.6)}25%{opacity:1}100%{opacity:0;transform:translateY(-70px) scale(1.1)}}
+.btn{
+  border:none;width:100%;padding:17px;border-radius:20px;font-size:18px;font-weight:900;
+  color:#fff;background:linear-gradient(135deg,#10B981,#06B6D4);
+  box-shadow:0 4px 0 0 #059669;cursor:pointer;letter-spacing:.01em;
+}
+.btn:active{transform:translateY(4px);box-shadow:none}
+.btn.sec{background:#fff;color:#10B981;box-shadow:0 4px 0 0 #D6DEDA}
+.foot{font-size:11px;color:#7c8f87;text-align:center;font-weight:600;line-height:1.35;padding:0 6px}
+.overlay{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;text-align:center;padding:26px;
+  background:rgba(8,14,20,.82);backdrop-filter:blur(3px);color:#fff}
+.overlay img{width:120px;filter:drop-shadow(0 10px 16px rgba(0,0,0,.5))}
+.overlay h2{font-size:26px;font-weight:900}
+.overlay p{font-size:14px;font-weight:600;color:rgba(255,255,255,.82);line-height:1.4;max-width:300px}
+.pill{display:inline-block;background:rgba(234,179,8,.18);color:#EAB308;font-weight:900;
+  padding:7px 15px;border-radius:999px;font-size:14px;border:1px solid rgba(234,179,8,.35)}
+.hidden{display:none!important}
+.conf{position:absolute;top:-12px;width:10px;height:14px;border-radius:2px;z-index:5;pointer-events:none}
+@keyframes fall{to{transform:translateY(560px) rotate(540deg);opacity:.1}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div>
+    <h1>Прыжки <span style="color:#F97316">&amp;</span> Приседания</h1>
+    <div class="sub">Держи телефон в руке. Прыгай или приседай — капибара растёт с каждым повтором.</div>
+  </div>
+
+  <div class="hud">
+    <div class="card"><div class="lbl">Повторы</div><div class="val"><span id="repC" class="g">0</span>/10</div></div>
+    <div class="card"><div class="lbl">Стрик</div><div class="val" id="streakC">🔥 0</div></div>
+    <div class="card"><div class="lbl">Points</div><div class="val" id="ptsC">0</div></div>
+  </div>
+
+  <div class="arena" id="arena">
+    <div class="floor"></div>
+    <div class="ringWrap">
+      <svg class="ring" viewBox="0 0 240 240">
+        <defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#10B981"/><stop offset="1" stop-color="#06B6D4"/>
+        </linearGradient></defs>
+        <circle class="bg" cx="120" cy="120" r="110"/>
+        <circle class="fg" id="ringFg" cx="120" cy="120" r="110"/>
+      </svg>
+      <div class="capWrap" id="capWrap"><img src="assets/coach-up.png" alt="capy" id="capImg"></div>
+    </div>
+    <div class="repBig"><div class="n" id="repBig">0</div><div class="of">из 10</div></div>
+    <div class="hint" id="hint">Нажми «Старт» и начинай прыгать 🦫</div>
+
+    <div class="overlay" id="startOv">
+      <img src="assets/coach-up.png" alt="capy">
+      <h2>Готов?</h2>
+      <p>Сделай <b>10 прыжков или приседаний</b>. Мы считаем крупные пики движения — телефон должен быть в руке.</p>
+      <button class="btn" id="startBtn" style="max-width:280px">Старт 🚀</button>
+    </div>
+
+    <div class="overlay hidden" id="doneOv">
+      <img src="assets/coach-up.png" alt="capy">
+      <h2>Подход выполнен! 💪</h2>
+      <p>Капибара выросла. Ты сделал подход — это дисциплина тела.</p>
+      <div class="pill" id="donePill">стрик +1 · +100 PushPoints</div>
+      <button class="btn" id="againBtn" style="max-width:280px">Ещё подход</button>
+    </div>
+  </div>
+
+  <div class="foot" id="foot">
+    Засчитываем факт «сделал подход», не точное число — это про дисциплину тела, а не про рекорд.
+  </div>
+</div>
+
+<script>
+var tg=window.Telegram&&window.Telegram.WebApp;
+if(tg){try{tg.ready();tg.expand();}catch(e){}}
+function haptic(t){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred(t||'light');}catch(e){}
+  try{navigator.vibrate&&navigator.vibrate(t==='heavy'?60:t==='medium'?30:15);}catch(e){}}
+
+var GOAL=10;
+var reps=0, streak=0, pts=0, active=false, tapMode=false;
+var CIRC=691;
+
+var repC=document.getElementById('repC'), repBig=document.getElementById('repBig');
+var streakC=document.getElementById('streakC'), ptsC=document.getElementById('ptsC');
+var ringFg=document.getElementById('ringFg'), capWrap=document.getElementById('capWrap');
+var hint=document.getElementById('hint'), arena=document.getElementById('arena');
+var startOv=document.getElementById('startOv'), doneOv=document.getElementById('doneOv');
+var foot=document.getElementById('foot');
+
+function render(){
+  repC.textContent=reps; repBig.textContent=reps;
+  streakC.textContent='🔥 '+streak; ptsC.textContent=pts;
+  var frac=Math.min(reps/GOAL,1);
+  ringFg.style.strokeDashoffset=CIRC*(1-frac);
+  var scale=0.62+0.62*frac; // растёт от маленькой к большой
+  capWrap.style.transform='scale('+scale.toFixed(3)+')';
+}
+
+function plusFx(){
+  var p=document.createElement('div');p.className='plus';p.textContent='+1';
+  p.style.left=(38+Math.random()*24)+'%';p.style.top='42%';
+  arena.appendChild(p);setTimeout(function(){p.remove();},720);
+  capWrap.classList.remove('pop');void capWrap.offsetWidth;capWrap.classList.add('pop');
+}
+
+function addRep(){
+  if(!active||reps>=GOAL)return;
+  reps++; haptic('medium'); plusFx(); render();
+  hint.textContent=reps>=GOAL?'Готово!':'Ещё '+(GOAL-reps)+' — не сдавайся 🦫';
+  if(reps>=GOAL) finishSet();
+}
+
+function finishSet(){
+  active=false; streak++; pts+=100; render();
+  haptic('heavy'); confetti();
+  document.getElementById('donePill').textContent='стрик 🔥'+streak+' · +100 PushPoints';
+  setTimeout(function(){doneOv.classList.remove('hidden');},420);
+}
+
+function confetti(){
+  var cols=['#10B981','#F97316','#EAB308','#06B6D4','#fff'];
+  for(var i=0;i<70;i++){(function(){
+    var c=document.createElement('div');c.className='conf';
+    c.style.left=Math.random()*100+'%';
+    c.style.background=cols[i%cols.length];
+    c.style.animation='fall '+(0.9+Math.random()*0.9)+'s '+(Math.random()*0.25)+'s ease-in forwards';
+    arena.appendChild(c);setTimeout(function(){c.remove();},2400);
+  })();}
+}
+
+// ---- Датчик ----
+var lastPeak=0, THRESH=6, DEBOUNCE=350, primed=true;
+function onMotion(ev){
+  var a=ev.accelerationIncludingGravity; if(!a){a=ev.acceleration; if(!a)return;}
+  var x=a.x||0,y=a.y||0,z=a.z||0;
+  var lin=Math.abs(Math.sqrt(x*x+y*y+z*z)-9.8);
+  var now=Date.now();
+  if(lin>THRESH && primed && (now-lastPeak)>DEBOUNCE){
+    lastPeak=now; primed=false; addRep();
+  }
+  if(lin<2.5) primed=true; // ждём возврата в покой перед следующим пиком
+}
+function attach(){ window.addEventListener('devicemotion', onMotion); }
+function fallback(){
+  tapMode=true;
+  hint.textContent='Датчик недоступен — тапай по экрану как повтор 👆';
+  foot.innerHTML='Датчик недоступен на этом устройстве — играй тапом. Смысл тот же: дисциплина тела.';
+  arena.addEventListener('click', function(e){ if(!active)return; addRep(); });
+}
+function startSensors(){
+  if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+    DeviceMotionEvent.requestPermission().then(function(s){ s==='granted'?attach():fallback(); }).catch(fallback);
+  } else if(typeof DeviceMotionEvent!=='undefined'){ attach(); }
+  else { fallback(); }
+}
+
+function beginSet(){
+  reps=0; active=true; primed=true; lastPeak=0; render();
+  startOv.classList.add('hidden'); doneOv.classList.add('hidden');
+  hint.textContent=tapMode?'Тапай по экрану — каждый тап = повтор 👆':'Прыгай / приседай — держи телефон крепко!';
+}
+
+document.getElementById('startBtn').addEventListener('click',function(){
+  haptic('light'); startSensors(); beginSet();
+});
+document.getElementById('againBtn').addEventListener('click',function(){
+  haptic('light'); beginSet();
+});
+
+render();
+
+// requestAnimationFrame — лёгкий «дыхательный» пульс капибары в покое
+(function loop(){
+  if(active && reps<GOAL){
+    var t=Date.now()/600;
+    var breathe=1+Math.sin(t)*0.012;
+    var base=0.62+0.62*Math.min(reps/GOAL,1);
+    capWrap.style.transform='scale('+(base*breathe).toFixed(3)+')';
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
