@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Beat-Push — демо ритма</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{--bg:#F4F7F6;--surface:#fff;--ink:#0E1116;--slate:#59646E;--line:#E3E8E9;
+    --brand:#10B981;--brand-d:#059669;--flame:#F97316;--gold:#EAB308;--cyan:#06B6D4;--accent:#DCF4E9;--accent-ink:#0F5B3E;
+    --perfect:#10B981;--good:#EAB308;--miss:#EF4444;--shadow-card:0 6px 0 0 #D6DEDA;--shadow-btn:0 4px 0 0 #059669}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overscroll-behavior:none;user-select:none;
+    font-family:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,-apple-system,sans-serif}
+  .app{max-width:440px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:14px;
+    padding:calc(env(safe-area-inset-top) + 16px) 18px calc(env(safe-area-inset-bottom) + 16px)}
+  .hd h1{margin:0;font-size:22px;font-weight:900;letter-spacing:-.02em}
+  .hd p{margin:3px 0 0;font-size:13px;font-weight:700;color:var(--slate)}
+  .tempo{display:flex;gap:8px}
+  .tempo button{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 4px;
+    font-family:inherit;font-size:13px;font-weight:800;color:var(--slate);cursor:pointer;box-shadow:var(--shadow-card)}
+  .tempo button.on{color:var(--brand-d);border-color:var(--brand);background:var(--accent)}
+  .tempo button small{display:block;font-size:10px;font-weight:700;opacity:.7;margin-top:1px}
+
+  /* арена */
+  .stage{position:relative;flex:1;min-height:340px;border-radius:28px;overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 15%,#12303a,#0a1016 70%);
+    display:grid;place-items:center;box-shadow:var(--shadow-card);border:1px solid #1c2a33}
+  #cv{position:absolute;inset:0;width:100%;height:100%}
+  #cap{position:relative;z-index:2;height:150px;width:auto;object-fit:contain;
+    filter:drop-shadow(0 10px 16px rgba(0,0,0,.5));transition:transform .07s ease}
+  #cap.beat{transform:scale(1.06)}
+  .fb{position:absolute;z-index:3;top:26px;left:0;right:0;text-align:center;font-size:30px;font-weight:900;
+    letter-spacing:.02em;opacity:0;pointer-events:none}
+  .fb.show{animation:pop .5s ease}
+  @keyframes pop{0%{opacity:0;transform:translateY(8px) scale(.8)}25%{opacity:1;transform:translateY(0) scale(1.1)}100%{opacity:0;transform:translateY(-8px) scale(1)}}
+  .tap-hint{position:absolute;z-index:2;bottom:16px;left:0;right:0;text-align:center;font-size:12.5px;font-weight:800;color:#8fb8ad;opacity:.9}
+
+  /* HUD */
+  .hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .hud .c{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:11px 8px;text-align:center;box-shadow:var(--shadow-card)}
+  .hud .v{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+  .hud .v.o{color:var(--flame)} .hud .v.g{color:var(--brand)}
+  .hud .k{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin-top:1px}
+
+  .btn{border:0;border-radius:20px;padding:16px;font-family:inherit;font-size:16px;font-weight:900;cursor:pointer;width:100%;
+    background:linear-gradient(135deg,#10B981,#06B6D4);color:#fff;box-shadow:var(--shadow-btn);transition:transform .1s,box-shadow .1s}
+  .btn:active{transform:translateY(4px);box-shadow:none}
+  .btn.stop{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow-card)}
+  .note{font-size:11.5px;color:var(--slate);font-weight:700;text-align:center;line-height:1.4}
+  .note b{color:var(--brand-d)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd"><h1>Beat-Push 🎵</h1><p>Отжимайся в ритм — попал в бит = комбо. Демо механики.</p></div>
+
+  <div class="tempo" id="tempo">
+    <button data-bpm="50" type="button">🐢 Медленно<small>50/мин</small></button>
+    <button data-bpm="70" class="on" type="button">💪 Средне<small>70/мин</small></button>
+    <button data-bpm="92" type="button">⚡ Быстро<small>92/мин</small></button>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <img id="cap" src="assets/coach-up.png" alt="">
+    <div class="fb" id="fb"></div>
+    <div class="tap-hint" id="hint">Нажми «Старт»</div>
+  </div>
+
+  <div class="hud">
+    <div class="c"><div class="v o" id="combo">0</div><div class="k">комбо ×<span id="mult">1</span></div></div>
+    <div class="c"><div class="v" id="score">0</div><div class="k">очки</div></div>
+    <div class="c"><div class="v g" id="acc">—</div><div class="k">точность</div></div>
+  </div>
+
+  <button class="btn" id="btn" type="button">▶︎ Старт</button>
+  <div class="note">Тапай по экрану в ритм с капибарой. <b>В реальном приложении тап = отжимание</b> (акселерометр ловит движение).</div>
+</div>
+
+<script>
+(function(){
+  var tg=window.Telegram&&window.Telegram.WebApp;
+  if(tg){ try{ tg.ready(); tg.expand(); }catch(e){} }
+  function hap(t){ try{ tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred(t||'light'); }catch(e){}
+    if(navigator.vibrate) try{ navigator.vibrate(t==='rigid'?25:12); }catch(e){} }
+
+  var cv=document.getElementById('cv'), ctx=cv.getContext('2d'), cap=document.getElementById('cap'),
+      fb=document.getElementById('fb'), hint=document.getElementById('hint'), stage=document.getElementById('stage'),
+      elCombo=document.getElementById('combo'), elMult=document.getElementById('mult'),
+      elScore=document.getElementById('score'), elAcc=document.getElementById('acc'), btn=document.getElementById('btn');
+
+  var BPM=70, interval=60/BPM, playing=false, ac=null, master=null;
+  var perfStart=0, audioStart=0, lastBi=-1, raf=null, schedT=null, nextNoteTime=0;
+  var combo=0, best=0, score=0, hits=0, sumErr=0, pulses=[];
+
+  // размеры canvas под dpr
+  function resize(){ var dpr=Math.min(2,window.devicePixelRatio||1), r=stage.getBoundingClientRect();
+    cv.width=r.width*dpr; cv.height=r.height*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); cw=r.width; ch=r.height; }
+  var cw,ch; resize(); window.addEventListener('resize',resize);
+
+  // выбор темпа
+  document.querySelectorAll('#tempo button').forEach(function(b){ b.addEventListener('click',function(){
+    document.querySelectorAll('#tempo button').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on'); BPM=+b.dataset.bpm; interval=60/BPM; if(playing) restart(); }); });
+
+  // ---- звук бита (Web Audio, синтез) ----
+  function playBeat(time){
+    var o=ac.createOscillator(), g=ac.createGain();
+    o.frequency.setValueAtTime(165,time); o.frequency.exponentialRampToValueAtTime(55,time+0.11);
+    g.gain.setValueAtTime(0.0001,time); g.gain.exponentialRampToValueAtTime(0.5,time+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001,time+0.17); o.connect(g); g.connect(master); o.start(time); o.stop(time+0.19);
+    var o2=ac.createOscillator(), g2=ac.createGain(); o2.type='square'; o2.frequency.value=1200;
+    g2.gain.setValueAtTime(0.0001,time); g2.gain.exponentialRampToValueAtTime(0.09,time+0.002);
+    g2.gain.exponentialRampToValueAtTime(0.0001,time+0.045); o2.connect(g2); g2.connect(master); o2.start(time); o2.stop(time+0.05);
+  }
+  function scheduler(){ while(nextNoteTime < ac.currentTime + 0.18){ playBeat(nextNoteTime); nextNoteTime+=interval; }
+    schedT=setTimeout(scheduler,45); }
+
+  // ---- визуал ----
+  var Rt=78, Rmax=150, capDown=false;
+  function onBeat(){ // капибара «отжимается» в такт + пульс кольца
+    capDown=!capDown; cap.src='assets/coach-'+(capDown?'down':'up')+'.png';
+    cap.classList.remove('beat'); void cap.offsetWidth; cap.classList.add('beat');
+    pulses.push({r:Rt,a:1});
+  }
+  function draw(){
+    ctx.clearRect(0,0,cw,ch); var cx=cw/2, cy=ch/2;
+    // approaching ring
+    var el=(performance.now()-perfStart)/1000; var p=el>0?(el/interval-Math.floor(el/interval)):0;
+    var ar=Rmax-(Rmax-Rt)*p;
+    // близость к попаданию → цвет
+    var near=1-Math.min(1,Math.abs(ar-Rt)/(Rmax-Rt));
+    ctx.beginPath(); ctx.arc(cx,cy,ar,0,7); ctx.lineWidth=5;
+    ctx.strokeStyle='rgba('+Math.round(6+ (16-6))+',211,'+Math.round(150+near*40)+','+(0.35+near*0.6)+')'; ctx.stroke();
+    // target ring
+    ctx.beginPath(); ctx.arc(cx,cy,Rt,0,7); ctx.lineWidth=3; ctx.strokeStyle='rgba(16,185,129,.9)'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,Rt,0,7); ctx.lineWidth=10; ctx.strokeStyle='rgba(16,185,129,.12)'; ctx.stroke();
+    // hit pulses
+    for(var i=pulses.length-1;i>=0;i--){ var pu=pulses[i]; pu.r+=3.2; pu.a-=0.045;
+      if(pu.a<=0){ pulses.splice(i,1); continue; }
+      ctx.beginPath(); ctx.arc(cx,cy,pu.r,0,7); ctx.lineWidth=3; ctx.strokeStyle='rgba(6,182,212,'+pu.a+')'; ctx.stroke(); }
+  }
+  function loop(){ var el=(performance.now()-perfStart)/1000;
+    if(el>=0){ var bi=Math.floor(el/interval); if(bi>lastBi){ lastBi=bi; onBeat(); } }
+    draw(); raf=requestAnimationFrame(loop); }
+
+  // ---- судейство тапа ----
+  function judge(){ if(!playing) return; var el=(performance.now()-perfStart)/1000; if(el<-0.05) return;
+    var nb=Math.round(el/interval), beatT=nb*interval, errMs=Math.abs(el-beatT)*1000;
+    var res = errMs<120?'perfect' : errMs<260?'good' : 'miss';
+    hits++; sumErr+=Math.min(errMs,400);
+    if(res==='miss'){ combo=0; hap('rigid'); }
+    else { combo++; if(combo>best)best=combo; var mult=1+Math.floor(combo/5);
+      score += (res==='perfect'?100:50)*mult; hap('light'); }
+    var col=res==='perfect'?getComputedStyle(document.documentElement).getPropertyValue('--perfect'):
+            res==='good'?'#EAB308':'#EF4444';
+    fb.textContent = res==='perfect'?'PERFECT':res==='good'?'GOOD':'MISS';
+    fb.style.color=col; fb.classList.remove('show'); void fb.offsetWidth; fb.classList.add('show');
+    // капибара-реакция
+    if(res==='perfect'){ cap.src='assets/coach-cheer.png'; }
+    render();
+  }
+  function render(){ elCombo.textContent=combo; elMult.textContent=1+Math.floor(combo/5);
+    elScore.textContent=score.toLocaleString('ru');
+    elAcc.textContent = hits? Math.max(0,Math.round(100-(sumErr/hits)/4))+'%' : '—'; }
+
+  stage.addEventListener('pointerdown', function(e){ e.preventDefault(); judge(); });
+
+  function start(){ if(!ac){ ac=new (window.AudioContext||window.webkitAudioContext)(); master=ac.createGain(); master.gain.value=0.9; master.connect(ac.destination); }
+    if(ac.state==='suspended') ac.resume();
+    playing=true; combo=0;best=0;score=0;hits=0;sumErr=0;lastBi=-1;pulses=[];
+    audioStart=ac.currentTime+0.15; nextNoteTime=audioStart; perfStart=performance.now()+150;
+    render(); hint.style.display='none'; btn.textContent='⏹ Стоп'; btn.classList.add('stop');
+    scheduler(); loop();
+  }
+  function stop(){ playing=false; clearTimeout(schedT); cancelAnimationFrame(raf);
+    cap.src='assets/coach-up.png'; hint.style.display=''; hint.textContent='Лучшее комбо: '+best;
+    btn.textContent='▶︎ Старт'; btn.classList.remove('stop'); }
+  function restart(){ stop(); start(); }
+  btn.addEventListener('click', function(){ playing?stop():start(); });
+})();
+</script>
+</body>
+</html>
