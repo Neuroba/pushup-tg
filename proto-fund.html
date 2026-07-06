@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PushUp · Капитал дисциплины</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{--bg:#0B1220;--surface:#141D2E;--raised:#1A2536;--line:#26324A;--ink:#EAF0F8;--slate:#8695AD;
+    --gold:#EAB308;--gold-d:#B98904;--em:#10B981;--em-l:#34D399;--cy:#22D3EE;--up:#3DD6A0;
+    --shadow:0 8px 24px rgba(0,0,0,.35)}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overscroll-behavior:none;user-select:none;
+    font-family:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,-apple-system,sans-serif}
+  .mono{font-variant-numeric:tabular-nums}
+  .app{max-width:440px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+    background:radial-gradient(120% 60% at 50% 0,#12203a 0,var(--bg) 55%);padding-top:env(safe-area-inset-top)}
+  .screen{display:none;flex-direction:column;flex:1;padding:18px 18px 16px;gap:15px}
+  .screen.on{display:flex}
+  .top{display:flex;align-items:center;gap:11px}
+  .top .m{width:42px;height:42px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:23px;
+    background:linear-gradient(145deg,#1e2c44,#141d2e);border:1px solid var(--line)}
+  .top h1{margin:0;font-size:19px;font-weight:900;letter-spacing:-.02em}
+  .top .sub{font-size:12px;font-weight:700;color:var(--slate);margin-top:1px}
+  .streak{margin-left:auto;display:flex;align-items:center;gap:5px;background:rgba(249,115,22,.14);color:#FDBA74;
+    border-radius:999px;padding:6px 12px;font-weight:900;font-size:14px;flex:none;border:1px solid rgba(249,115,22,.25)}
+  .spacer{flex:1;min-height:2px}
+
+  /* тренировка */
+  .arena{position:relative;flex:1;min-height:300px;border-radius:26px;overflow:hidden;border:1px solid var(--line);
+    background:radial-gradient(110% 90% at 50% 20%,#16233d,#0a1120 75%);display:flex;flex-direction:column;align-items:center;padding:16px}
+  .invest-tag{align-self:flex-start;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:900;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--gold);background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.28);
+    padding:5px 11px;border-radius:999px}
+  .cap-wrap{position:relative;flex:1;display:grid;place-items:center;width:100%}
+  .cap-glow{position:absolute;bottom:14px;width:170px;height:60px;border-radius:50%;
+    background:radial-gradient(60% 100% at 50% 100%,rgba(234,179,8,.28),rgba(16,185,129,.1) 55%,transparent 72%);filter:blur(4px)}
+  #cap{position:relative;z-index:1;height:150px;object-fit:contain;filter:drop-shadow(0 12px 16px rgba(0,0,0,.5));
+    transition:transform .18s cubic-bezier(0.34,1.56,0.64,1)}
+  .repbox{text-align:center;margin-top:-6px}
+  .repbox .n{font-size:66px;font-weight:900;line-height:.9;color:var(--gold);letter-spacing:-.03em}
+  .repbox .n b{color:var(--slate);font-size:30px;font-weight:900}
+  .repbox .l{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);margin-top:4px}
+  .setrow{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;font-weight:800;color:var(--slate)}
+  .setrow .bar{flex:1;height:7px;background:#0e1727;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+  .setrow .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-d));width:0;transition:width .3s}
+  .cue{margin-top:auto;align-self:center;display:flex;align-items:center;gap:7px;font-weight:900;font-size:15px;
+    background:rgba(255,255,255,.05);border:1px solid var(--line);padding:8px 16px;border-radius:999px}
+  .cue .ar{color:var(--em-l);animation:down 1s ease-in-out infinite}
+  @keyframes down{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+
+  .tick{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+  .tick .c{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:900;color:#5b4700;
+    background:radial-gradient(circle at 35% 30%,#FDE68A,var(--gold));border:1px solid var(--gold-d)}
+  .tick .t{flex:1}.tick .t b{font-size:15px;font-weight:900;color:var(--gold)}
+  .tick .t span{display:block;font-size:11.5px;font-weight:700;color:var(--slate);margin-top:1px}
+
+  .btn{border:0;border-radius:18px;padding:15px;font-family:inherit;font-size:16px;font-weight:900;cursor:pointer;width:100%;
+    background:linear-gradient(145deg,#FDE68A,var(--gold));color:#3a2a00;box-shadow:0 4px 0 0 var(--gold-d);
+    transition:transform .1s,box-shadow .1s}
+  .btn:active{transform:translateY(4px);box-shadow:none}
+  .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+
+  /* капитал */
+  .cap-hero{background:linear-gradient(160deg,#1c2740,#131c2e);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--shadow)}
+  .cap-hero .lbl{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  .cap-hero .big{font-size:44px;font-weight:900;letter-spacing:-.02em;margin:4px 0 0;color:var(--ink)}
+  .cap-hero .big .u{font-size:18px;color:var(--gold);font-weight:900}
+  .cap-hero .delta{font-size:13px;font-weight:800;color:var(--up);margin-top:2px}
+  #chart{width:100%;height:96px;display:block;margin-top:12px}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .kpi .v{font-size:22px;font-weight:900;color:var(--ink)} .kpi .v.g{color:var(--gold)}
+  .kpi .k{font-size:11px;font-weight:800;color:var(--slate);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+  .explain{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+  .explain h3{margin:0 0 10px;font-size:14px;font-weight:900}
+  .explain ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+  .explain li{display:flex;gap:10px;font-size:13px;font-weight:600;color:var(--ink);line-height:1.4}
+  .explain li i{flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-style:normal;font-size:13px;
+    background:rgba(234,179,8,.12);color:var(--gold);font-weight:900}
+  .disc{font-size:11px;font-weight:600;color:var(--slate);line-height:1.5;text-align:center;padding:0 6px}
+
+  .tabbar{display:flex;gap:6px;padding:8px 14px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surface)}
+  .tab{flex:1;text-align:center;padding:9px 4px;border-radius:14px;font-size:11px;font-weight:800;color:var(--slate);cursor:pointer}
+  .tab.on{color:var(--gold);background:rgba(234,179,8,.1)}
+  .tab .i{font-size:20px;display:block;margin-bottom:1px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ТРЕНИРОВКА -->
+  <div class="screen on" id="s-train">
+    <div class="top"><span class="m">💪</span><div><h1>Приседания</h1><div class="sub">Задание дня · вкладывай энергию</div></div>
+      <span class="streak">🔥 <span id="t-streak">5</span></span></div>
+    <div class="arena">
+      <span class="invest-tag">📈 Инвестируешь энергию</span>
+      <div class="cap-wrap"><div class="cap-glow"></div><img id="cap" src="assets/coach-up.png" alt=""></div>
+      <div class="repbox"><div class="n mono"><span id="reps">0</span><b> / <span id="goal">10</span></b></div><div class="l">приседаний</div></div>
+      <div class="setrow"><span>Подход <span id="set">1</span>/3</span><div class="bar"><i id="setbar"></i></div></div>
+      <div class="cue"><span class="ar">↓</span> <span id="cue">Присядь · энергия → капитал</span></div>
+    </div>
+    <div class="tick"><div class="c">P</div><div class="t"><b id="t-earned">+0 PushPoints</b><span>копится в твой капитал дисциплины</span></div></div>
+    <button class="btn" id="startBtn">▶︎ Начать подход</button>
+  </div>
+
+  <!-- КАПИТАЛ -->
+  <div class="screen" id="s-cap">
+    <div class="top"><span class="m">💰</span><div><h1>Капитал дисциплины</h1><div class="sub">Твой накопленный вклад энергии</div></div></div>
+    <div class="cap-hero">
+      <div class="lbl">Твой капитал</div>
+      <div class="big mono"><span id="c-points">0</span> <span class="u">PP</span></div>
+      <div class="delta" id="c-delta">▲ растёт каждый день дисциплины</div>
+      <canvas id="chart"></canvas>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="v g mono" id="c-rank">топ 12%</div><div class="k">твоя доля в фонде</div></div>
+      <div class="kpi"><div class="v mono"><span id="c-streak">5</span> дн</div><div class="k">непрерывность вклада</div></div>
+    </div>
+    <div class="explain">
+      <h3>Как это работает</h3>
+      <ul>
+        <li><i>1</i><div><b>Вкладываешь энергию</b> — каждая тренировка = вклад в твой капитал дисциплины (PushPoints).</div></li>
+        <li><i>2</i><div><b>Стабильность = доля</b> — чем раньше и ровнее вкладываешь, тем больше твоя доля в растущем фонде сообщества.</div></li>
+        <li><i>3</i><div><b>Перспектива</b> — по мере роста проекта ранние дисциплинированные участники в приоритете на награды и ценность фонда.</div></li>
+      </ul>
+    </div>
+    <div class="disc">«Капитал дисциплины» — метрика твоей вовлечённости и вклада, а не гарантия дохода. Монетизация — перспектива по мере роста проекта и оформляется отдельно.</div>
+  </div>
+
+  <div class="tabbar">
+    <div class="tab on" id="tab-train" onclick="go('train')"><span class="i">💪</span>Тренировка</div>
+    <div class="tab" id="tab-cap" onclick="go('cap')"><span class="i">💰</span>Капитал</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var tg=window.Telegram&&window.Telegram.WebApp;
+  if(tg){ try{ tg.ready(); tg.expand(); tg.setHeaderColor&&tg.setHeaderColor('#0B1220'); tg.setBackgroundColor&&tg.setBackgroundColor('#0B1220'); }catch(e){} }
+  function hap(t){ try{ tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred(t||'light'); }catch(e){} if(navigator.vibrate)try{navigator.vibrate(t==='rigid'?28:12);}catch(e){} }
+
+  // state
+  var KEY='pushup_fund_v1';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(db)); }catch(e){} }
+  var db=load(); db.points=db.points||420; db.streak=db.streak||5; db.hist=db.hist||null;
+
+  var GOAL=10, SETS=3;
+  var reps=0, setN=1, earned=0, running=false, sessionPts=0;
+  var elReps=document.getElementById('reps'), elSet=document.getElementById('set'), elSetbar=document.getElementById('setbar'),
+      elCap=document.getElementById('cap'), elEarned=document.getElementById('t-earned'), elCue=document.getElementById('cue'),
+      startBtn=document.getElementById('startBtn'), elTStreak=document.getElementById('t-streak');
+  elTStreak.textContent=db.streak;
+
+  // навигация
+  window.go=function(n){ document.getElementById('s-train').classList.toggle('on',n==='train');
+    document.getElementById('s-cap').classList.toggle('on',n==='cap');
+    document.getElementById('tab-train').classList.toggle('on',n==='train');
+    document.getElementById('tab-cap').classList.toggle('on',n==='cap');
+    if(n==='cap') renderCap(); window.scrollTo(0,0); };
+
+  function growCap(){ var s=1+Math.min(reps,GOAL)/GOAL*0.28; elCap.style.transform='scale('+s+')'; }
+  function onRep(){ if(!running) return; reps++; sessionPts+=5; earned+=5;
+    elReps.textContent=reps; elEarned.textContent='+'+earned+' PushPoints';
+    elSetbar.style.width=Math.min(100,reps/GOAL*100)+'%'; growCap();
+    elCap.src='assets/coach-cheer.png'; setTimeout(function(){ if(running) elCap.src='assets/coach-up.png'; },200); hap('rigid');
+    if(reps>=GOAL) setDone();
+  }
+  function setDone(){ running=false; db.points+=sessionPts+30; sessionPts=0; save();
+    elCue.textContent='Подход выполнен! Капитал пополнен 💰';
+    if(setN<SETS){ setN++; elSet.textContent=setN; startBtn.textContent='▶︎ Начать подход '+setN;
+      startBtn.style.display=''; reps=0; }
+    else { db.streak++; save(); elTStreak.textContent=db.streak;
+      elCue.textContent='🎉 Все подходы! Стрик +1, капитал вырос'; startBtn.textContent='✓ Готово · смотреть капитал';
+      startBtn.onclick=function(){ go('cap'); }; }
+  }
+
+  // датчик: прыжки/приседания = крупные пики (надёжно)
+  var lastPeak=0, armed=true, TH=4.6;
+  function onMotion(ev){ var a=ev.accelerationIncludingGravity; if(!a){a=ev.acceleration; if(!a)return;}
+    var m=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
+    var lin=Math.abs(m-9.8), now=Date.now();
+    if(lin>TH && armed && now-lastPeak>340){ armed=false; lastPeak=now; onRep(); }
+    if(lin<TH*0.5) armed=true;
+  }
+  function attach(){ window.addEventListener('devicemotion', onMotion); }
+  function begin(){ running=true; reps=0; sessionPts=0; elReps.textContent='0'; elSetbar.style.width='0';
+    elCue.textContent='Присядь ↓ · энергия → капитал'; startBtn.style.display='none'; growCap(); }
+  startBtn.addEventListener('click', function(){
+    if(startBtn.textContent.indexOf('Готово')>=0){ go('cap'); return; }
+    if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+      DeviceMotionEvent.requestPermission().then(function(s){ if(s==='granted'){ attach(); begin(); } else fallback(); }).catch(fallback);
+    } else if(typeof DeviceMotionEvent!=='undefined'){ attach(); begin(); } else fallback();
+  });
+  function fallback(){ // датчика нет — тап = приседание (демо)
+    begin(); elCue.textContent='Датчик недоступен — тапай = приседание';
+    document.getElementById('arena') && 0;
+    document.querySelector('.arena').addEventListener('pointerdown', function(){ if(running) onRep(); });
+  }
+
+  // капитал: график роста
+  function renderCap(){ document.getElementById('c-points').textContent=db.points.toLocaleString('ru');
+    document.getElementById('c-streak').textContent=db.streak;
+    var rank=db.points>3000?'топ 6%':db.points>1200?'топ 12%':db.points>500?'топ 24%':'топ 40%';
+    document.getElementById('c-rank').textContent=rank;
+    drawChart();
+  }
+  function drawChart(){ var cv=document.getElementById('chart'); var dpr=Math.min(2,window.devicePixelRatio||1);
+    var w=cv.clientWidth||360, h=96; cv.width=w*dpr; cv.height=h*dpr; var x=cv.getContext('2d'); x.scale(dpr,dpr);
+    // синтетическая история накопления к текущему капиталу
+    var N=14, pts=[], base=db.points, cur=base;
+    for(var i=N-1;i>=0;i--){ pts[i]=cur; cur=Math.max(0, cur-(20+Math.round((Math.sin(i*1.7)+1.4)*22))); }
+    pts[N-1]=base;
+    var mn=Math.min.apply(null,pts), mx=Math.max.apply(null,pts)||1;
+    function X(i){ return 6+i/(N-1)*(w-12); } function Y(v){ return h-8-(v-mn)/((mx-mn)||1)*(h-24); }
+    // area
+    var g=x.createLinearGradient(0,0,0,h); g.addColorStop(0,'rgba(234,179,8,.34)'); g.addColorStop(1,'rgba(234,179,8,0)');
+    x.beginPath(); x.moveTo(X(0),Y(pts[0])); for(var i=1;i<N;i++) x.lineTo(X(i),Y(pts[i]));
+    x.lineTo(X(N-1),h); x.lineTo(X(0),h); x.closePath(); x.fillStyle=g; x.fill();
+    // line
+    x.beginPath(); x.moveTo(X(0),Y(pts[0])); for(i=1;i<N;i++) x.lineTo(X(i),Y(pts[i]));
+    x.strokeStyle='#EAB308'; x.lineWidth=2.5; x.lineJoin='round'; x.stroke();
+    // endpoint dot
+    x.beginPath(); x.arc(X(N-1),Y(pts[N-1]),4,0,7); x.fillStyle='#FDE68A'; x.fill();
+    x.strokeStyle='#EAB308'; x.lineWidth=2; x.stroke();
+  }
+})();
+</script>
+</body>
+</html>
