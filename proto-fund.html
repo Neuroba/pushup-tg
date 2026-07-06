@@ -99,7 +99,7 @@
     <div class="arena">
       <span class="invest-tag">🎮 Режим заданий · ×0.3 XP</span>
       <div class="taskban" id="taskban">Задание дня 1 · 5 приседаний</div>
-      <div class="cap-wrap"><div class="cap-glow"></div><img id="cap" src="assets/pose/base-stand.png" alt=""></div>
+      <div class="cap-wrap"><div class="cap-glow"></div><img id="cap" src="assets/pose/base-stand.png" alt="" onerror="var m=this.src.match(/stage-\d\d-(stand|squat|jump)/);if(m){this.src='assets/pose/base-'+m[1]+'.png';}"></div>
       <div class="repbox"><div class="l" id="movelbl">Приседания</div><div class="n mono"><span id="reps">0</span><b> / <span id="goal">5</span></b></div></div>
       <div class="setrow"><span id="segprog">задание 1 / 30</span><div class="bar"><i id="setbar"></i></div></div>
       <div class="cue"><span class="ar" id="cueAr">↓</span> <span id="cue">Присядь</span></div>
@@ -185,10 +185,22 @@
     [['squat',12],['jump',12],['squat',12],['jump',12]],
     [['squat',20],['jump',20],['squat',20]]
   ];
-  // ПОЗЫ капибары под движение. Пока стенд-ины из coach-* — Mac сгенерит присед/прыжок/стойку
-  // под аватар стадии юзера (см. док ЗАДАНИЯ-и-позы-для-Mac.md). stand=стойка, act=фаза движения.
-  var POSE={ squat:{stand:'assets/pose/base-stand.png', act:'assets/pose/base-squat.png', word:'Присядь', ar:'↓'},
-             jump: {stand:'assets/pose/base-stand.png', act:'assets/pose/base-jump.png',  word:'Прыгай',  ar:'↑'} };
+  // ===== ПОЗЫ капибары под движение (per-stage) =====
+  // Аватар берётся под ТЕКУЩУЮ стадию юзера: assets/pose/stage-NN-{stand|squat|jump}.png.
+  // Стадия выводится из очков теми же порогами, что в index.html (аватар совпадает с домашним).
+  // Пока Mac не положил per-stage файлы — HAS_STAGE_POSES=false, отдаём base-{pose}.png (fallback).
+  // Когда файлы лежат в assets/pose/ — переключить HAS_STAGE_POSES=true.
+  var HAS_STAGE_POSES=false;
+  var STAGE_PTS=[0,60,180,400,800,1500,2600,4200,6500,10000];
+  function stageOf(pts){ var s=0; for(var i=0;i<STAGE_PTS.length;i++){ if(pts>=STAGE_PTS[i]) s=i; } return s; }
+  function currentStage(){ return Math.max(1,Math.min(10, stageOf(db.points)+1)); } // 1..10; TODO: заменить на stage из tg_sync (Supabase profiles.level)
+  function posePath(phase){ // phase = stand|squat|jump
+    if(!HAS_STAGE_POSES) return 'assets/pose/base-'+phase+'.png';
+    return 'assets/pose/stage-'+('0'+currentStage()).slice(-2)+'-'+phase+'.png';
+  }
+  var POSE={
+    squat:{ get stand(){return posePath('stand');}, get act(){return posePath('squat');}, word:'Присядь', ar:'↓' },
+    jump: { get stand(){return posePath('stand');}, get act(){return posePath('jump');},  word:'Прыгай',  ar:'↑' } };
   var RU1={squat:'приседаний', jump:'прыжков'}, RU2={squat:'Приседания', jump:'Прыжки'};
   function taskName(t){ return t.map(function(s){return s[1]+' '+RU1[s[0]];}).join(' + '); }
   var taskDay = db.taskDay || 0;                 // прогресс по 30 заданиям (усиление день за днём)
@@ -207,6 +219,7 @@
     elBan.textContent='Задание дня '+dn+' · '+taskName(task);
     elMove.textContent=RU2[m]; elGoal.textContent=task[0][1]; elReps.textContent='0';
     elSeg.textContent='задание '+dn+' / 30'; elCue.textContent=POSE[m].word; elCueAr.textContent=POSE[m].ar;
+    elCap.src=POSE[m].stand;
     document.querySelector('#s-train h1').textContent=RU2[m];
   })();
 
@@ -239,7 +252,7 @@
   }
   function taskDone(){ running=false; db.points+=sessionPts+30; sessionPts=0;
     db.streak=(db.streak||0)+1; db.taskDay=taskDay+1; save(); elTStreak.textContent=db.streak;
-    elCap.src='assets/pose/base-jump.png'; elCap.style.transform='scale(1.24)';
+    elCap.src=posePath('jump'); elCap.style.transform='scale(1.24)';
     elMove.textContent='Готово'; elCue.textContent='🎉 Задание дня выполнено! Стрик +1';
     var next=TASKS[(taskDay+1)%TASKS.length];
     elBan.textContent='✓ Задание '+((taskDay%TASKS.length)+1)+' закрыто · завтра сложнее: '+taskName(next);
