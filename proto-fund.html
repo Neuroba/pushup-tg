@@ -32,12 +32,15 @@
   .invest-tag{align-self:flex-start;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:900;letter-spacing:.04em;
     text-transform:uppercase;color:var(--gold);background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.28);
     padding:5px 11px;border-radius:999px}
-  .cap-wrap{position:relative;flex:1;display:grid;place-items:center;width:100%}
+  .cap-wrap{position:relative;display:grid;place-items:center;width:100%;height:150px;flex:none;margin-top:6px}
   .cap-glow{position:absolute;bottom:14px;width:170px;height:60px;border-radius:50%;
     background:radial-gradient(60% 100% at 50% 100%,rgba(234,179,8,.28),rgba(16,185,129,.1) 55%,transparent 72%);filter:blur(4px)}
-  #cap{position:relative;z-index:1;height:150px;object-fit:contain;filter:drop-shadow(0 12px 16px rgba(0,0,0,.5));
+  #cap{position:relative;z-index:1;height:128px;object-fit:contain;filter:drop-shadow(0 12px 16px rgba(0,0,0,.5));
     transition:transform .18s cubic-bezier(0.34,1.56,0.64,1)}
-  .repbox{text-align:center;margin-top:-6px}
+  .repbox{text-align:center;margin-top:16px}
+  .taskban{margin-top:10px;padding:8px 14px;border-radius:12px;font-size:13px;font-weight:900;line-height:1.25;
+    text-align:center;color:var(--gold);background:rgba(234,179,8,.10);border:1px solid rgba(234,179,8,.28);max-width:94%}
+  .repbox .l{margin-bottom:5px!important;margin-top:0!important}
   .repbox .n{font-size:66px;font-weight:900;line-height:.9;color:var(--gold);letter-spacing:-.03em}
   .repbox .n b{color:var(--slate);font-size:30px;font-weight:900}
   .repbox .l{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);margin-top:4px}
@@ -95,10 +98,11 @@
       <span class="streak">🔥 <span id="t-streak">5</span></span></div>
     <div class="arena">
       <span class="invest-tag">🎮 Режим заданий · ×0.3 XP</span>
+      <div class="taskban" id="taskban">Задание дня 1 · 5 приседаний</div>
       <div class="cap-wrap"><div class="cap-glow"></div><img id="cap" src="assets/coach-up.png" alt=""></div>
-      <div class="repbox"><div class="n mono"><span id="reps">0</span><b> / <span id="goal">10</span></b></div><div class="l">приседаний</div></div>
-      <div class="setrow"><span>Подход <span id="set">1</span>/3</span><div class="bar"><i id="setbar"></i></div></div>
-      <div class="cue"><span class="ar">↓</span> <span id="cue">Присядь · +дисциплина-валюта</span></div>
+      <div class="repbox"><div class="l" id="movelbl">Приседания</div><div class="n mono"><span id="reps">0</span><b> / <span id="goal">5</span></b></div></div>
+      <div class="setrow"><span id="segprog">задание 1 / 30</span><div class="bar"><i id="setbar"></i></div></div>
+      <div class="cue"><span class="ar" id="cueAr">↓</span> <span id="cue">Присядь</span></div>
     </div>
     <div class="tick"><div class="c">P</div><div class="t"><b id="t-earned">+0 PushPoints</b><span>в приложении — в 3× больше XP · <b style="color:var(--gold)">полный режим</b></span></div></div>
     <button class="btn" id="startBtn">▶︎ Начать подход</button>
@@ -155,12 +159,56 @@
   function save(){ try{ localStorage.setItem(KEY,JSON.stringify(db)); }catch(e){} }
   var db=load(); db.points=db.points||420; db.streak=db.streak||5; db.hist=db.hist||null;
 
-  var GOAL=10, SETS=3;
-  var reps=0, setN=1, earned=0, running=false, sessionPts=0;
+  // ===== СИСТЕМА ЗАДАНИЙ: 30 усиливающихся вариаций (присед/прыжок) =====
+  // move: 'squat'=приседания, 'jump'=прыжки. Задание = цепочка сегментов [move, кол-во].
+  var TASKS=[
+    [['squat',5]],[['squat',8]],[['squat',10]],
+    [['jump',5]],[['jump',8]],[['jump',10]],
+    [['squat',5],['jump',5]],[['squat',8],['jump',5]],[['squat',10],['jump',8]],
+    [['jump',5],['squat',5],['jump',5]],
+    [['squat',12]],[['jump',12]],
+    [['squat',8],['jump',8],['squat',8]],
+    [['jump',10],['squat',10]],
+    [['squat',6],['jump',6],['squat',6],['jump',6]],
+    [['squat',15]],[['jump',15]],
+    [['squat',10],['jump',10],['squat',10]],
+    [['jump',8],['squat',8],['jump',8],['squat',8]],
+    [['squat',12],['jump',12]],
+    [['squat',20]],
+    [['squat',10],['jump',10],['squat',10],['jump',10]],
+    [['squat',15],['jump',15]],
+    [['jump',20]],
+    [['squat',8],['jump',8],['squat',8],['jump',8],['squat',8]],
+    [['squat',15],['jump',15],['squat',15]],
+    [['squat',25]],
+    [['jump',10],['squat',15],['jump',10]],
+    [['squat',12],['jump',12],['squat',12],['jump',12]],
+    [['squat',20],['jump',20],['squat',20]]
+  ];
+  // ПОЗЫ капибары под движение. Пока стенд-ины из coach-* — Mac сгенерит присед/прыжок/стойку
+  // под аватар стадии юзера (см. док ЗАДАНИЯ-и-позы-для-Mac.md). stand=стойка, act=фаза движения.
+  var POSE={ squat:{stand:'assets/coach-up.png', act:'assets/coach-down.png',  word:'Присядь', ar:'↓'},
+             jump: {stand:'assets/coach-up.png', act:'assets/coach-cheer.png', word:'Прыгай',  ar:'↑'} };
+  var RU1={squat:'приседаний', jump:'прыжков'}, RU2={squat:'Приседания', jump:'Прыжки'};
+  function taskName(t){ return t.map(function(s){return s[1]+' '+RU1[s[0]];}).join(' + '); }
+  var taskDay = db.taskDay || 0;                 // прогресс по 30 заданиям (усиление день за днём)
+  var task = TASKS[taskDay % TASKS.length];
+  var curSeg=0, segReps=0, taskReps=0, taskGoal=0;
+  task.forEach(function(s){ taskGoal+=s[1]; });
+  var reps=0, earned=0, running=false, sessionPts=0;
   var elReps=document.getElementById('reps'), elSet=document.getElementById('set'), elSetbar=document.getElementById('setbar'),
       elCap=document.getElementById('cap'), elEarned=document.getElementById('t-earned'), elCue=document.getElementById('cue'),
-      startBtn=document.getElementById('startBtn'), elTStreak=document.getElementById('t-streak');
+      startBtn=document.getElementById('startBtn'), elTStreak=document.getElementById('t-streak'),
+      elMove=document.getElementById('movelbl'), elGoal=document.getElementById('goal'),
+      elBan=document.getElementById('taskban'), elSeg=document.getElementById('segprog'), elCueAr=document.getElementById('cueAr');
   elTStreak.textContent=db.streak;
+  // показать текущее задание дня на старте
+  (function initTask(){ var m=task[0][0], dn=(taskDay%TASKS.length)+1;
+    elBan.textContent='Задание дня '+dn+' · '+taskName(task);
+    elMove.textContent=RU2[m]; elGoal.textContent=task[0][1]; elReps.textContent='0';
+    elSeg.textContent='задание '+dn+' / 30'; elCue.textContent=POSE[m].word; elCueAr.textContent=POSE[m].ar;
+    document.querySelector('#s-train h1').textContent=RU2[m];
+  })();
 
   // навигация
   window.go=function(n){ document.getElementById('s-train').classList.toggle('on',n==='train');
@@ -169,20 +217,34 @@
     document.getElementById('tab-cap').classList.toggle('on',n==='cap');
     if(n==='cap') renderCap(); window.scrollTo(0,0); };
 
-  function growCap(){ var s=1+Math.min(reps,GOAL)/GOAL*0.28; elCap.style.transform='scale('+s+')'; }
-  function onRep(){ if(!running) return; reps++; sessionPts+=5; earned+=5;
-    elReps.textContent=reps; elEarned.textContent='+'+earned+' PushPoints';
-    elSetbar.style.width=Math.min(100,reps/GOAL*100)+'%'; growCap();
-    elCap.src='assets/coach-cheer.png'; setTimeout(function(){ if(running) elCap.src='assets/coach-up.png'; },200); hap('rigid');
-    if(reps>=GOAL) setDone();
+  function curMove(){ return task[curSeg][0]; }
+  function segGoal(){ return task[curSeg][1]; }
+  function growCap(){ var s=1+Math.min(taskReps,taskGoal)/taskGoal*0.24; elCap.style.transform='scale('+s+')'; }
+  function showSeg(){ var mv=curMove(), p=POSE[mv];
+    elCap.src=p.stand; elMove.textContent=RU2[mv]; elGoal.textContent=segGoal(); elReps.textContent=segReps;
+    elCue.textContent=p.word; elCueAr.textContent=p.ar; document.querySelector('#s-train h1').textContent=RU2[mv];
+    elSeg.textContent='сегмент '+(curSeg+1)+'/'+task.length+' · задание '+((taskDay%TASKS.length)+1)+'/30';
+    elSetbar.style.width=Math.round(taskReps/taskGoal*100)+'%';
   }
-  function setDone(){ running=false; db.points+=sessionPts+30; sessionPts=0; save();
-    elCue.textContent='Подход выполнен! Капитал пополнен 💰';
-    if(setN<SETS){ setN++; elSet.textContent=setN; startBtn.textContent='▶︎ Начать подход '+setN;
-      startBtn.style.display=''; reps=0; }
-    else { db.streak++; save(); elTStreak.textContent=db.streak;
-      elCue.textContent='🎉 Все подходы! Стрик +1, капитал вырос'; startBtn.textContent='✓ Готово · смотреть капитал';
-      startBtn.onclick=function(){ go('cap'); }; }
+  function onRep(){ if(!running) return; segReps++; taskReps++; sessionPts+=5; earned+=5;
+    elReps.textContent=segReps; elEarned.textContent='+'+earned+' PushPoints';
+    elSetbar.style.width=Math.min(100,Math.round(taskReps/taskGoal*100))+'%'; growCap();
+    var p=POSE[curMove()]; elCap.src=p.act; setTimeout(function(){ if(running) elCap.src=p.stand; },200); hap('rigid');
+    if(segReps>=segGoal()){
+      if(curSeg<task.length-1){ curSeg++; segReps=0;
+        setTimeout(function(){ if(running){ showSeg();
+          elCue.textContent='Дальше: '+RU2[curMove()].toLowerCase()+' '+POSE[curMove()].ar; } },280);
+      } else taskDone();
+    }
+  }
+  function taskDone(){ running=false; db.points+=sessionPts+30; sessionPts=0;
+    db.streak=(db.streak||0)+1; db.taskDay=taskDay+1; save(); elTStreak.textContent=db.streak;
+    elCap.src='assets/coach-cheer.png'; elCap.style.transform='scale(1.24)';
+    elMove.textContent='Готово'; elCue.textContent='🎉 Задание дня выполнено! Стрик +1';
+    var next=TASKS[(taskDay+1)%TASKS.length];
+    elBan.textContent='✓ Задание '+((taskDay%TASKS.length)+1)+' закрыто · завтра сложнее: '+taskName(next);
+    startBtn.style.display=''; startBtn.textContent='✓ Готово · смотреть капитал';
+    startBtn.onclick=function(){ go('cap'); };
   }
 
   // датчик: прыжки/приседания = крупные пики (надёжно)
@@ -195,8 +257,8 @@
     if(lin<TH*0.5) armed=true;
   }
   function attach(){ window.addEventListener('devicemotion', onMotion); }
-  function begin(){ running=true; reps=0; sessionPts=0; elReps.textContent='0'; elSetbar.style.width='0';
-    elCue.textContent='Присядь ↓ · энергия → капитал'; startBtn.style.display='none'; growCap(); }
+  function begin(){ running=true; curSeg=0; segReps=0; taskReps=0; sessionPts=0; earned=0;
+    startBtn.style.display='none'; showSeg(); growCap(); }
   startBtn.addEventListener('click', function(){
     if(startBtn.textContent.indexOf('Готово')>=0){ go('cap'); return; }
     if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
