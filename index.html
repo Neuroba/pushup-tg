@@ -122,18 +122,18 @@
     <div class="wcount mono" id="w-count">0</div>
     <div class="wsub" id="w-hint">Выбери движение и двигайся ритмично</div>
     <div class="presets" id="presets">
-      <button data-th="12.5" class="on" type="button">💪 Отжимания</button>
-      <button data-th="14.5" type="button">🙌 Махи</button>
-      <button data-th="16" type="button">⚡ Интенсив</button>
+      <button data-th="12" class="on" type="button">💪 Отжимания</button>
+      <button data-th="10" type="button">🐢 Медленно</button>
+      <button data-th="22" type="button">🙌 Махи</button>
     </div>
     <div class="wcard">
-      <div class="lbl"><span>Движение</span><span class="mono" id="w-mag">—</span></div>
+      <div class="lbl"><span>Наклон сейчас</span><span class="mono" id="w-mag">—</span></div>
       <canvas id="wchart" height="70"></canvas>
     </div>
     <div class="calib">
-      <div class="row"><span>Чувствительность</span><span class="mono" id="w-th">13.5</span></div>
-      <input type="range" id="w-slider" min="10.5" max="18" step="0.5" value="13.5">
-      <div class="hint" id="w-cal">Считает лишние? — двинь вправо. Пропускает? — влево.</div>
+      <div class="row"><span>Чувствительность</span><span class="mono" id="w-th">12°</span></div>
+      <input type="range" id="w-slider" min="7" max="35" step="1" value="12">
+      <div class="hint" id="w-cal">Пропускает медленные? — двинь влево. Считает лишнее? — вправо.</div>
     </div>
     <div class="spacer"></div>
     <button class="btn primary" id="w-btn" onclick="toggleWorkout()">▶︎ Поехали</button>
@@ -228,13 +228,16 @@
     var pct = db.points>3000?'8%':db.points>1000?'20%':db.points>200?'45%':'—';
     document.getElementById('c-pct').textContent=pct; }
 
-  // ---- accelerometer rep detector ----
-  var running=false, reps=0, primed=false, lastRep=0, TH=13.5, lastMag=9.8;
+  // ---- rep detector: НАКЛОН/направление гравитации (позиционный, НЕ зависит от скорости) ----
+  // Считаем цикл «вниз → вверх» по углу наклона относительно позы покоя (верх отжимания).
+  // Медленное движение даёт тот же угол, что и быстрое, — поэтому засчитывается в любом темпе.
+  var running=false, reps=0, phase='up', lastRep=0, DOWN=12, peak=0, ang=0;
+  var gX=null,gY=null,gZ=null, bX=0,bY=0,bZ=0, haveBase=false;
   var elCount=document.getElementById('w-count'), elMag=document.getElementById('w-mag'),
       elState=document.getElementById('w-state'), elHint=document.getElementById('w-hint'),
       elBtn=document.getElementById('w-btn');
   var slider=document.getElementById('w-slider');
-  function setTH(v){ TH=v; slider.value=v; document.getElementById('w-th').textContent=v.toFixed(1); }
+  function setTH(v){ DOWN=v; slider.value=v; document.getElementById('w-th').textContent=v.toFixed(0)+'°'; }
   slider.addEventListener('input', function(){ setTH(parseFloat(slider.value)); });
   // пресеты типа движения — каждое ритмичное движение засчитывается
   document.querySelectorAll('#presets button').forEach(function(b){
@@ -243,30 +246,47 @@
       b.classList.add('on'); setTH(parseFloat(b.dataset.th));
     });
   });
+  setTH(DOWN); // инициализация подписи/порога
 
   // real-time chart
   var cv=document.getElementById('wchart'), ctx, cw, ch, buf=[];
   function prepChart(){ var dpr=Math.min(2,window.devicePixelRatio||1); cw=cv.clientWidth; ch=cv.height;
     cv.width=cw*dpr; cv.height=ch*dpr; ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); }
+  var AMAX=45; // потолок шкалы угла на графике, °
   function drawChart(){ if(!ctx) return; ctx.clearRect(0,0,cw,ch);
-    // threshold line
-    var ty=ch-((TH-9)/(19-9))*ch; ctx.strokeStyle='rgba(249,115,22,.5)'; ctx.setLineDash([4,4]);
+    // линия порога «вниз»
+    var ty=ch-(Math.min(DOWN,AMAX)/AMAX)*ch; ctx.strokeStyle='rgba(249,115,22,.5)'; ctx.setLineDash([4,4]);
     ctx.beginPath(); ctx.moveTo(0,ty); ctx.lineTo(cw,ty); ctx.stroke(); ctx.setLineDash([]);
     ctx.beginPath(); ctx.strokeStyle='#34d399'; ctx.lineWidth=2;
-    for(var i=0;i<buf.length;i++){ var x=(i/(buf.length-1||1))*cw; var y=ch-((buf[i]-9)/(19-9))*ch;
+    for(var i=0;i<buf.length;i++){ var x=(i/(buf.length-1||1))*cw; var y=ch-(Math.min(buf[i],AMAX)/AMAX)*ch;
       i?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke(); }
 
   function onMotion(ev){
-    var a=ev.accelerationIncludingGravity||ev.acceleration; if(!a) return;
-    var mag=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
-    lastMag=mag; buf.push(mag); if(buf.length>70) buf.shift();
-    elMag.textContent=mag.toFixed(1); drawChart();
-    var now=Date.now();
-    if(running && mag>=TH && !primed && now-lastRep>450){
-      primed=true; reps++; lastRep=now; elCount.textContent=reps;
-      elCount.classList.remove('hit'); void elCount.offsetWidth; elCount.classList.add('hit'); hap('medium');
+    var a=ev.accelerationIncludingGravity; if(!a){ a=ev.acceleration; if(!a) return; }
+    var ax=a.x||0, ay=a.y||0, az=a.z||0;
+    // низкочастотный фильтр — выделяем направление гравитации (ориентацию телефона)
+    if(gX===null){ gX=ax; gY=ay; gZ=az; }
+    var k=0.18; gX+=k*(ax-gX); gY+=k*(ay-gY); gZ+=k*(az-gZ);
+    if(!haveBase){ bX=gX; bY=gY; bZ=gZ; haveBase=true; }
+    var m1=Math.sqrt(gX*gX+gY*gY+gZ*gZ)||1, m2=Math.sqrt(bX*bX+bY*bY+bZ*bZ)||1;
+    var cos=(gX*bX+gY*bY+gZ*bZ)/(m1*m2); if(cos>1)cos=1; if(cos<-1)cos=-1;
+    ang=Math.acos(cos)*57.2958; // угол наклона от позы покоя, °
+    buf.push(ang); if(buf.length>70) buf.shift();
+    elMag.textContent=ang.toFixed(0)+'°'; drawChart();
+    if(!running) return;
+    var now=Date.now(), UP=Math.max(4,DOWN*0.45);
+    if(phase==='up'){
+      // поза покоя (верх отжимания) медленно подстраивается — работает при любом хвате
+      bX+=0.02*(gX-bX); bY+=0.02*(gY-bY); bZ+=0.02*(gZ-bZ);
+      if(ang>=DOWN){ phase='down'; peak=ang; elState.textContent='Вниз… ▼'; }
+    } else {
+      if(ang>peak) peak=ang;
+      if(ang<=UP){ // вернулся наверх — повтор засчитан (в любом темпе)
+        if(now-lastRep>350){ reps++; lastRep=now; elCount.textContent=reps;
+          elCount.classList.remove('hit'); void elCount.offsetWidth; elCount.classList.add('hit'); hap('medium'); }
+        phase='up'; elState.textContent='Считаю… ▲';
+      }
     }
-    if(mag<TH-2.0) primed=false;
   }
 
   function startSensors(){
@@ -278,7 +298,8 @@
     else { elHint.textContent='Датчик движения не поддерживается.'; }
   }
   function attach(){ window.addEventListener('devicemotion', onMotion); running=true;
-    elBtn.textContent='⏸ Пауза'; elState.textContent='Считаю…'; elHint.textContent='Отжимайся ровно, телефон плотно к корпусу'; }
+    gX=gY=gZ=null; haveBase=false; phase='up'; peak=0; // калибруем позу покоя по текущему положению
+    elBtn.textContent='⏸ Пауза'; elState.textContent='Считаю… ▲'; elHint.textContent='Опускайся и поднимайся — засчитаю в любом темпе, телефон у корпуса'; }
 
   window.toggleWorkout=function(){
     if(!running){ if(!buf.length) prepChart(); startSensors(); }
@@ -301,9 +322,9 @@
     hap('heavy');
     go('result');
   };
-  function resetWorkout(){ reps=0; primed=false; running=false; buf=[];
+  function resetWorkout(){ reps=0; phase='up'; peak=0; running=false; buf=[]; gX=gY=gZ=null; haveBase=false;
     elCount.textContent='0'; elBtn.textContent='▶︎ Поехали'; elState.textContent='Нажми «Поехали» и начинай';
-    elHint.textContent='Телефон у груди, отжимайся ровно'; setTimeout(prepChart,30); }
+    elHint.textContent='Телефон у груди — опускайся и поднимайся в любом темпе'; setTimeout(prepChart,30); }
 
   renderHome();
 })();
