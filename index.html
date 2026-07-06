@@ -206,12 +206,12 @@
     </button>
     <button class="qrow" onclick="go('capital')">
       <div class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg></div>
-      <div class="tt"><b>Мой капитал</b><span>Баллы и фонд комьюнити</span></div>
+      <div class="tt"><b>Мой капитал</b><span>Баллы дисциплины · трать в игре</span></div>
       <svg class="chev" width="20" height="20" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
     </button>
     <button class="qrow" onclick="go('invite')">
       <div class="ic" style="background:rgba(16,185,129,.12)"><svg viewBox="0 0 24 24" style="stroke:var(--brand)"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div class="tt"><b>Позвать друзей</b><span>Бонус тебе и другу · растите фонд</span></div>
+      <div class="tt"><b>Позвать друзей</b><span>Бонус тебе и другу · держите ритм</span></div>
       <svg class="chev" width="20" height="20" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
     </button>
   </div>
@@ -262,16 +262,16 @@
 
   <!-- CAPITAL -->
   <div class="screen" id="s-capital">
-    <div class="top"><span class="m">🦫</span><div><h1>Мой капитал</h1><div class="sub">Копится за каждое отжимание</div></div></div>
+    <div class="top"><span class="m">🦫</span><div><h1>Мой капитал</h1><div class="sub">Твоя валюта дисциплины</div></div></div>
     <div class="cap-hero">
       <div class="lbl">🪙 PushPoints</div>
       <div class="big mono" id="c-points">0</div>
-      <div class="u">твой накопленный вклад</div>
+      <div class="u">баланс дисциплины</div>
     </div>
     <div class="fund">
-      <div class="k">🏦 Фонд комьюнити</div>
-      <div class="amt mono">$<span class="c" id="c-fund">2 140</span></div>
-      <div class="note">Общий капитал, который строим вместе — 10% каждой подписки. Ты в топ <b id="c-pct">—</b> вкладчиков.</div>
+      <div class="k">🛒 Трать баллы на</div>
+      <div class="amt" style="font-size:15px;font-weight:800;line-height:1.5">🧊 Заморозка стрика · 🎨 Кастом капибары · ⚡ Буст · 🤺 Вызов друга</div>
+      <div class="note">Копишь тренировками — тратишь в игре. Твоя лига: топ <b id="c-pct">—</b> по дисциплине.</div>
     </div>
     <div class="how">
       <h3>Как копить быстрее</h3>
@@ -281,18 +281,18 @@
         <li><span>🔥</span> Серия <span class="pts">+10 × дни</span></li>
       </ul>
     </div>
-    <div class="disc">PushPoints — внутренний прогресс, не валюта и не инвестиция. Фонд показан для прозрачности.</div>
+    <div class="disc">PushPoints — внутренняя игровая валюта дисциплины: копишь тренировками, тратишь в игре. Не деньги, не инвестиция, не выводится.</div>
     <div class="spacer"></div>
     <button class="btn primary" onclick="go('workout')">💪 Тренироваться</button>
   </div>
 
   <!-- INVITE -->
   <div class="screen" id="s-invite">
-    <div class="top"><span class="m">🎁</span><div><h1>Позвать друзей</h1><div class="sub">Растите капитал вместе</div></div></div>
+    <div class="top"><span class="m">🎁</span><div><h1>Позвать друзей</h1><div class="sub">Держите дисциплину вместе</div></div></div>
     <div class="hero">
       <div class="avatar" style="height:128px;margin-bottom:0"><div class="glow"></div><img src="assets/coach-cheer.png" style="width:auto"></div>
       <h2>Зови друзей в PushUp</h2>
-      <p>Каждый друг усиливает общий фонд — и твою долю в нём. Вы оба получаете бонус на старте.</p>
+      <p>Каждый друг — плюс к твоей команде дисциплины. Вы оба получаете бонус на старте.</p>
     </div>
     <div class="reward2">
       <div class="rw"><div class="v o mono">+150</div><div class="k">тебе за друга</div></div>
@@ -305,7 +305,7 @@
       <h3>Уровни амбассадора</h3>
       <ul>
         <li><span>🥉</span> 3 друга — бейдж «Амбассадор» <span class="pts">+300</span></li>
-        <li><span>🥈</span> 10 друзей — буст доли в фонде <span class="pts">+1500</span></li>
+        <li><span>🥈</span> 10 друзей — буст множителя <span class="pts">+1500</span></li>
         <li><span>🥇</span> 25 друзей — статус «Легенда» <span class="pts">+5000</span></li>
       </ul>
     </div>
@@ -395,7 +395,7 @@
     document.getElementById('i-count').textContent=n;
     document.getElementById('i-next').textContent=Math.max(0,next-n); }
   window.inviteShare=function(){ hap('medium'); var link=myRefLink();
-    var text='💪 Го в PushUp — считает отжимания движением телефона, копишь баллы и растим общий фонд. Тебе бонус на старте!';
+    var text='💪 Го в PushUp — тренируйся, копи дисциплину-баллы, держим ритм вместе. Тебе бонус на старте!';
     var url='https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(text);
     if(tg && tg.openTelegramLink){ tg.openTelegramLink(url); } else { window.open(url,'_blank'); } };
   window.inviteCopy=function(){ hap('light'); var link=myRefLink();
