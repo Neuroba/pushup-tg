@@ -1,0 +1,468 @@
+[
+  {
+    "day": 1,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 5
+      }
+    ],
+    "total": 5,
+    "name": "5 приседаний"
+  },
+  {
+    "day": 2,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 8
+      }
+    ],
+    "total": 8,
+    "name": "8 приседаний"
+  },
+  {
+    "day": 3,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 10
+      }
+    ],
+    "total": 10,
+    "name": "10 приседаний"
+  },
+  {
+    "day": 4,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 5
+      }
+    ],
+    "total": 5,
+    "name": "5 прыжков"
+  },
+  {
+    "day": 5,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 8
+      }
+    ],
+    "total": 8,
+    "name": "8 прыжков"
+  },
+  {
+    "day": 6,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 10
+      }
+    ],
+    "total": 10,
+    "name": "10 прыжков"
+  },
+  {
+    "day": 7,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 5
+      },
+      {
+        "move": "jump",
+        "reps": 5
+      }
+    ],
+    "total": 10,
+    "name": "5 приседаний + 5 прыжков"
+  },
+  {
+    "day": 8,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 8
+      },
+      {
+        "move": "jump",
+        "reps": 5
+      }
+    ],
+    "total": 13,
+    "name": "8 приседаний + 5 прыжков"
+  },
+  {
+    "day": 9,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 10
+      },
+      {
+        "move": "jump",
+        "reps": 8
+      }
+    ],
+    "total": 18,
+    "name": "10 приседаний + 8 прыжков"
+  },
+  {
+    "day": 10,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 5
+      },
+      {
+        "move": "squat",
+        "reps": 5
+      },
+      {
+        "move": "jump",
+        "reps": 5
+      }
+    ],
+    "total": 15,
+    "name": "5 прыжков + 5 приседаний + 5 прыжков"
+  },
+  {
+    "day": 11,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 12
+      }
+    ],
+    "total": 12,
+    "name": "12 приседаний"
+  },
+  {
+    "day": 12,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 12
+      }
+    ],
+    "total": 12,
+    "name": "12 прыжков"
+  },
+  {
+    "day": 13,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 8
+      },
+      {
+        "move": "jump",
+        "reps": 8
+      },
+      {
+        "move": "squat",
+        "reps": 8
+      }
+    ],
+    "total": 24,
+    "name": "8 приседаний + 8 прыжков + 8 приседаний"
+  },
+  {
+    "day": 14,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 10
+      },
+      {
+        "move": "squat",
+        "reps": 10
+      }
+    ],
+    "total": 20,
+    "name": "10 прыжков + 10 приседаний"
+  },
+  {
+    "day": 15,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 6
+      },
+      {
+        "move": "jump",
+        "reps": 6
+      },
+      {
+        "move": "squat",
+        "reps": 6
+      },
+      {
+        "move": "jump",
+        "reps": 6
+      }
+    ],
+    "total": 24,
+    "name": "6 приседаний + 6 прыжков + 6 приседаний + 6 прыжков"
+  },
+  {
+    "day": 16,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 15
+      }
+    ],
+    "total": 15,
+    "name": "15 приседаний"
+  },
+  {
+    "day": 17,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 15
+      }
+    ],
+    "total": 15,
+    "name": "15 прыжков"
+  },
+  {
+    "day": 18,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 10
+      },
+      {
+        "move": "jump",
+        "reps": 10
+      },
+      {
+        "move": "squat",
+        "reps": 10
+      }
+    ],
+    "total": 30,
+    "name": "10 приседаний + 10 прыжков + 10 приседаний"
+  },
+  {
+    "day": 19,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 8
+      },
+      {
+        "move": "squat",
+        "reps": 8
+      },
+      {
+        "move": "jump",
+        "reps": 8
+      },
+      {
+        "move": "squat",
+        "reps": 8
+      }
+    ],
+    "total": 32,
+    "name": "8 прыжков + 8 приседаний + 8 прыжков + 8 приседаний"
+  },
+  {
+    "day": 20,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 12
+      },
+      {
+        "move": "jump",
+        "reps": 12
+      }
+    ],
+    "total": 24,
+    "name": "12 приседаний + 12 прыжков"
+  },
+  {
+    "day": 21,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 20
+      }
+    ],
+    "total": 20,
+    "name": "20 приседаний"
+  },
+  {
+    "day": 22,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 10
+      },
+      {
+        "move": "jump",
+        "reps": 10
+      },
+      {
+        "move": "squat",
+        "reps": 10
+      },
+      {
+        "move": "jump",
+        "reps": 10
+      }
+    ],
+    "total": 40,
+    "name": "10 приседаний + 10 прыжков + 10 приседаний + 10 прыжков"
+  },
+  {
+    "day": 23,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 15
+      },
+      {
+        "move": "jump",
+        "reps": 15
+      }
+    ],
+    "total": 30,
+    "name": "15 приседаний + 15 прыжков"
+  },
+  {
+    "day": 24,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 20
+      }
+    ],
+    "total": 20,
+    "name": "20 прыжков"
+  },
+  {
+    "day": 25,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 8
+      },
+      {
+        "move": "jump",
+        "reps": 8
+      },
+      {
+        "move": "squat",
+        "reps": 8
+      },
+      {
+        "move": "jump",
+        "reps": 8
+      },
+      {
+        "move": "squat",
+        "reps": 8
+      }
+    ],
+    "total": 40,
+    "name": "8 приседаний + 8 прыжков + 8 приседаний + 8 прыжков + 8 приседаний"
+  },
+  {
+    "day": 26,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 15
+      },
+      {
+        "move": "jump",
+        "reps": 15
+      },
+      {
+        "move": "squat",
+        "reps": 15
+      }
+    ],
+    "total": 45,
+    "name": "15 приседаний + 15 прыжков + 15 приседаний"
+  },
+  {
+    "day": 27,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 25
+      }
+    ],
+    "total": 25,
+    "name": "25 приседаний"
+  },
+  {
+    "day": 28,
+    "segments": [
+      {
+        "move": "jump",
+        "reps": 10
+      },
+      {
+        "move": "squat",
+        "reps": 15
+      },
+      {
+        "move": "jump",
+        "reps": 10
+      }
+    ],
+    "total": 35,
+    "name": "10 прыжков + 15 приседаний + 10 прыжков"
+  },
+  {
+    "day": 29,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 12
+      },
+      {
+        "move": "jump",
+        "reps": 12
+      },
+      {
+        "move": "squat",
+        "reps": 12
+      },
+      {
+        "move": "jump",
+        "reps": 12
+      }
+    ],
+    "total": 48,
+    "name": "12 приседаний + 12 прыжков + 12 приседаний + 12 прыжков"
+  },
+  {
+    "day": 30,
+    "segments": [
+      {
+        "move": "squat",
+        "reps": 20
+      },
+      {
+        "move": "jump",
+        "reps": 20
+      },
+      {
+        "move": "squat",
+        "reps": 20
+      }
+    ],
+    "total": 60,
+    "name": "20 приседаний + 20 прыжков + 20 приседаний"
+  }
+]
