@@ -152,21 +152,36 @@
   function render(){ elCombo.textContent=combo; elReps.textContent=reps; elScore.textContent=score.toLocaleString('ru');
     elAcc.textContent=hits?Math.max(0,Math.round(100-(sumErr/hits)/5))+'%':'—'; }
 
-  // ---- акселерометр (порт рабочего детектора наклона) ----
+  // ---- акселерометр: ДВА детектора (работают при любой ориентации) ----
+  // 1) НАКЛОН — поворот телефона (грудь/рука). 2) ДВИЖЕНИЕ — вертикальное перемещение (карман).
   var gX=null,gY=null,gZ=null,bX=0,bY=0,bZ=0,haveBase=false,phase='up',DOWN=12,lastRep=0;
+  var vVel=0, primedDown=false, VTH=0.8;
+  function fireRep(src){ var now=performance.now(); if(now-lastRep<340) return; lastRep=now; reps++; judge(); }
   function onMotion(ev){ var a=ev.accelerationIncludingGravity; if(!a){a=ev.acceleration; if(!a)return;}
     var ax=a.x||0,ay=a.y||0,az=a.z||0;
     if(gX===null){gX=ax;gY=ay;gZ=az;}
-    var k=0.18; gX+=k*(ax-gX);gY+=k*(ay-gY);gZ+=k*(az-gZ);
+    var k=0.16; gX+=k*(ax-gX);gY+=k*(ay-gY);gZ+=k*(az-gZ);
     if(!haveBase){bX=gX;bY=gY;bZ=gZ;haveBase=true;}
-    var m1=Math.sqrt(gX*gX+gY*gY+gZ*gZ)||1,m2=Math.sqrt(bX*bX+bY*bY+bZ*bZ)||1;
-    var cos=(gX*bX+gY*bY+gZ*bZ)/(m1*m2); if(cos>1)cos=1;if(cos<-1)cos=-1;
+    var gm=Math.sqrt(gX*gX+gY*gY+gZ*gZ)||1, m2=Math.sqrt(bX*bX+bY*bY+bZ*bZ)||1;
+    // (1) угол наклона от позы покоя
+    var cos=(gX*bX+gY*bY+gZ*bZ)/(gm*m2); if(cos>1)cos=1;if(cos<-1)cos=-1;
     var ang=Math.acos(cos)*57.2958;
-    if(liveEl && !playing) liveEl.textContent='наклон: '+ang.toFixed(0)+'°';
+    // (2) вертикальное движение: линейное ускорение → проекция на гравитацию → интеграл (без дрейфа)
+    var lx=ax-gX, ly=ay-gY, lz=az-gZ;
+    var vAcc=(lx*gX+ly*gY+lz*gZ)/gm;
+    var dt=ev.interval? Math.min(Math.max(ev.interval/1000,0.005),0.05) : 0.02;
+    vVel = vVel*0.88 + vAcc*dt;
+    if(liveEl) liveEl.textContent='наклон '+ang.toFixed(0)+'° · движ '+Math.abs(vVel).toFixed(1);
     if(!playing) return;
-    var UP=Math.max(4,DOWN*0.45), now=performance.now();
+    var now=performance.now();
+    // детектор НАКЛОНА (поворот)
+    var UP=Math.max(4,DOWN*0.45);
     if(phase==='up'){ bX+=0.02*(gX-bX);bY+=0.02*(gY-bY);bZ+=0.02*(gZ-bZ); if(ang>=DOWN){ phase='down'; } }
-    else { if(ang<=UP){ if(now-lastRep>320){ lastRep=now; reps++; judge(); } phase='up'; } } }
+    else { if(ang<=UP){ fireRep('наклон'); phase='up'; } }
+    // детектор ДВИЖЕНИЯ (карман): цикл вниз→вверх по вертикальной скорости
+    if(vVel > VTH) primedDown=true;
+    else if(primedDown && vVel < -VTH*0.55){ primedDown=false; fireRep('движ'); }
+  }
   function attachMotion(){ if(attached) return true; gX=gY=gZ=null;haveBase=false;phase='up';
     window.addEventListener('devicemotion', onMotion); attached=true; return true; }
 
@@ -185,7 +200,7 @@
         .catch(function(){ afterPermission(false); });
     } else if(typeof DeviceMotionEvent!=='undefined'){ afterPermission(true); }
     else { afterPermission(false); } }
-  function beginCountdown(){ combo=0;best=0;score=0;reps=0;hits=0;sumErr=0;lastBi=-1;pulses=[];phase='up';lastRep=0;render();
+  function beginCountdown(){ combo=0;best=0;score=0;reps=0;hits=0;sumErr=0;lastBi=-1;pulses=[];phase='up';lastRep=0;vVel=0;primedDown=false;render();
     stateEl.textContent = tapMode ? 'Датчик недоступен — тапай по экрану в ритм (тест механики).' : 'Прими упор лёжа, телефон у груди…';
     liveEl.textContent='';
     var n=3; big.textContent='3';
