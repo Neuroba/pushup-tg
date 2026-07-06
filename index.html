@@ -131,6 +131,19 @@
   .how ul{margin:0;padding:0;list-style:none}
   .disc{font-size:11px;color:var(--slate);font-weight:600;text-align:center;line-height:1.5}
 
+  /* INVITE / реферальная программа */
+  .reward2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .rw{background:var(--surface);border:1px solid var(--brdr);border-radius:var(--r-2xl);padding:16px;text-align:center;box-shadow:var(--shadow-card)}
+  .rw .v{font-size:24px;font-weight:900;color:var(--xp)} .rw .v.o{color:var(--brand)}
+  .rw .k{font-size:11.5px;font-weight:800;color:var(--slate);margin-top:2px}
+  .linkbox{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px dashed var(--brdr);
+    border-radius:var(--r-xl);padding:13px 15px;font-size:13px;font-weight:800;color:var(--ink);overflow:hidden}
+  .linkbox .lk{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+  .toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:999px;font-size:13px;font-weight:800;
+    pointer-events:none;transition:all .25s ease;z-index:60;max-width:88%;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
   .tabbar{display:flex;gap:6px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));
     border-top:1px solid var(--brdr);background:var(--surface)}
   .tab{flex:1;text-align:center;padding:8px 4px;border-radius:16px;font-size:11px;font-weight:800;color:var(--slate);cursor:pointer}
@@ -168,6 +181,11 @@
     <button class="qrow" onclick="go('capital')">
       <div class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg></div>
       <div class="tt"><b>Мой капитал</b><span>Баллы и фонд комьюнити</span></div>
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button class="qrow" onclick="go('invite')">
+      <div class="ic" style="background:rgba(16,185,129,.12)"><svg viewBox="0 0 24 24" style="stroke:var(--brand)"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="tt"><b>Позвать друзей</b><span>Бонус тебе и другу · растите фонд</span></div>
       <svg class="chev" width="20" height="20" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
     </button>
   </div>
@@ -240,10 +258,39 @@
     <button class="btn primary" onclick="go('workout')">💪 Тренироваться</button>
   </div>
 
+  <!-- INVITE -->
+  <div class="screen" id="s-invite">
+    <div class="top"><span class="m">🎁</span><div><h1>Позвать друзей</h1><div class="sub">Растите капитал вместе</div></div></div>
+    <div class="hero">
+      <div style="font-size:58px;line-height:1">🤝</div>
+      <h2>Зови друзей в PushUp</h2>
+      <p>Каждый друг усиливает общий фонд — и твою долю в нём. Вы оба получаете бонус на старте.</p>
+    </div>
+    <div class="reward2">
+      <div class="rw"><div class="v o mono">+150</div><div class="k">тебе за друга</div></div>
+      <div class="rw"><div class="v mono">+200</div><div class="k">другу в подарок</div></div>
+    </div>
+    <div class="linkbox"><span class="lk mono" id="i-link">t.me/…</span></div>
+    <button class="btn primary" onclick="inviteShare()">📣 Поделиться приглашением</button>
+    <button class="btn ghost" onclick="inviteCopy()">🔗 Скопировать ссылку</button>
+    <div class="how">
+      <h3>Уровни амбассадора</h3>
+      <ul>
+        <li><span>🥉</span> 3 друга — бейдж «Амбассадор» <span class="pts">+300</span></li>
+        <li><span>🥈</span> 10 друзей — буст доли в фонде <span class="pts">+1500</span></li>
+        <li><span>🥇</span> 25 друзей — статус «Легенда» <span class="pts">+5000</span></li>
+      </ul>
+    </div>
+    <div class="disc">Приглашено: <b id="i-count">0</b> · до следующего уровня: <b id="i-next">3</b>. Реальный зачёт друзей включится с синхронизацией аккаунтов (Supabase).</div>
+    <div class="spacer"></div>
+    <button class="btn dark" onclick="go('home')">На главную</button>
+  </div>
+
   <div class="tabbar">
     <div class="tab on" id="t-home" onclick="go('home')"><span class="i">🏠</span>Главная</div>
     <div class="tab" id="t-workout" onclick="go('workout')"><span class="i">💪</span>Тренировка</div>
     <div class="tab" id="t-capital" onclick="go('capital')"><span class="i">🪙</span>Капитал</div>
+    <div class="tab" id="t-invite" onclick="go('invite')"><span class="i">🎁</span>Друзья</div>
   </div>
 </div>
 
@@ -268,20 +315,23 @@
   function save(d){ try{ localStorage.setItem(KEY, JSON.stringify(d)); }catch(e){} /* TODO: syncSupabase(d) */ }
   var db = load();
   db.points=db.points||0; db.total=db.total||0; db.streak=db.streak||0; db.lastDay=db.lastDay||null;
+  db.invited=db.invited||0;
 
   // greet from Telegram user
   var user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
   if(user && user.first_name){ document.getElementById('greet').textContent='Привет, '+user.first_name+'!'; }
 
   // ---- navigation ----
-  var screens=['home','workout','result','capital'];
+  var screens=['home','workout','result','capital','invite'];
+  var tabNames=['home','workout','capital','invite'];
   window.go=function(name){
     screens.forEach(function(s){ document.getElementById('s-'+s).classList.toggle('on', s===name); });
-    ['home','workout','capital'].forEach(function(s){
+    tabNames.forEach(function(s){
       var t=document.getElementById('t-'+s); if(t) t.classList.toggle('on', s===name); });
     if(name==='home') renderHome();
     if(name==='capital') renderCapital();
     if(name==='workout') resetWorkout();
+    if(name==='invite') renderInvite();
     window.scrollTo(0,0);
   };
   function renderHome(){ document.getElementById('h-streak').textContent=db.streak;
@@ -290,6 +340,31 @@
   function renderCapital(){ document.getElementById('c-points').textContent=db.points.toLocaleString('ru');
     var pct = db.points>3000?'8%':db.points>1000?'20%':db.points>200?'45%':'—';
     document.getElementById('c-pct').textContent=pct; }
+
+  // ---- РЕФЕРАЛКА / распространение мини-аппа ----
+  var BOT='pushup_xxx_bot';
+  var _tel=null,_telT=null;
+  function toast(msg){ if(!_tel){ _tel=document.createElement('div'); _tel.className='toast'; document.body.appendChild(_tel); }
+    _tel.textContent=msg; _tel.classList.add('on'); clearTimeout(_telT);
+    _telT=setTimeout(function(){ _tel.classList.remove('on'); },1900); }
+  function myRefLink(){ var id=(user&&user.id)?user.id:'demo'; return 'https://t.me/'+BOT+'?startapp=ref_'+id; }
+  function renderInvite(){ document.getElementById('i-link').textContent=myRefLink().replace('https://','');
+    var n=db.invited||0, next=n<3?3:n<10?10:n<25?25:n+1;
+    document.getElementById('i-count').textContent=n;
+    document.getElementById('i-next').textContent=Math.max(0,next-n); }
+  window.inviteShare=function(){ hap('medium'); var link=myRefLink();
+    var text='💪 Го в PushUp — считает отжимания движением телефона, копишь баллы и растим общий фонд. Тебе бонус на старте!';
+    var url='https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(text);
+    if(tg && tg.openTelegramLink){ tg.openTelegramLink(url); } else { window.open(url,'_blank'); } };
+  window.inviteCopy=function(){ hap('light'); var link=myRefLink();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(link).then(function(){ toast('Ссылка скопирована ✓'); }, function(){ toast(link); });
+    } else { toast(link); } };
+  // захват приглашения при входе (start_param=ref_<id>) → бонус приглашённому
+  (function(){ var sp=tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param;
+    if(sp && sp.indexOf('ref_')===0 && !db.refClaimed){ var by=sp.slice(4);
+      if(by && (!user || String(user.id)!==by)){ db.refBy=by; db.refClaimed=true; db.points+=200; save(db);
+        setTimeout(function(){ toast('🎁 +200 PushPoints за приглашение!'); },900); } } })();
 
   // ---- rep detector: НАКЛОН/направление гравитации (позиционный, НЕ зависит от скорости) ----
   // Считаем цикл «вниз → вверх» по углу наклона относительно позы покоя (верх отжимания).
