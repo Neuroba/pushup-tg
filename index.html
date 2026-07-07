@@ -31,11 +31,11 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
     font-family:"Nunito",ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;
-    -webkit-font-smoothing:antialiased;overscroll-behavior:none;user-select:none}
+    -webkit-font-smoothing:antialiased;overscroll-behavior:none;user-select:none;overflow:hidden}
   .mono{font-variant-numeric:tabular-nums}
-  .app{max-width:440px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  .app{max-width:440px;margin:0 auto;height:var(--app-h,100vh);display:flex;flex-direction:column;overflow:hidden;
     padding:env(safe-area-inset-top) 0 0}
-  .screen{display:none;flex-direction:column;flex:1;padding:22px 20px 24px;gap:18px}
+  .screen{display:none;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:22px 20px 24px;gap:18px}
   .screen.on{display:flex}
   .spacer{flex:1;min-height:4px}
 
@@ -174,7 +174,7 @@
     pointer-events:none;transition:all .25s ease;z-index:60;max-width:88%;box-shadow:0 10px 24px rgba(0,0,0,.25)}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .tabbar{display:flex;gap:8px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));
+  .tabbar{display:flex;flex:none;gap:8px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));
     border-top:1px solid var(--brdr);background:var(--surface)}
   .tab{flex:1;text-align:center;padding:6px 2px 7px;border-radius:20px;
     font-size:10px;font-weight:900;letter-spacing:-.03em;color:var(--tc);cursor:pointer;position:relative;
@@ -342,6 +342,9 @@
 (function(){
   var tg = window.Telegram && window.Telegram.WebApp;
   if(tg){ try{ tg.ready(); tg.expand();
+    tg.disableVerticalSwipes && tg.disableVerticalSwipes();
+    var __setH=function(){document.documentElement.style.setProperty('--app-h',((tg.viewportStableHeight||window.innerHeight))+'px');};
+    __setH(); tg.onEvent && tg.onEvent('viewportChanged',__setH);
     var __dark = tg.colorScheme==='dark';
     if(__dark) document.documentElement.classList.add('dark');
     var __hc = __dark ? '#0B0E11' : '#F7F9F9';
