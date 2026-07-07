@@ -174,11 +174,25 @@
     pointer-events:none;transition:all .25s ease;z-index:60;max-width:88%;box-shadow:0 10px 24px rgba(0,0,0,.25)}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .tabbar{display:flex;gap:6px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));
+  .tabbar{display:flex;gap:8px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));
     border-top:1px solid var(--brdr);background:var(--surface)}
-  .tab{flex:1;text-align:center;padding:13px 4px;border-radius:18px;font-size:13.5px;font-weight:800;color:var(--slate);cursor:pointer}
-  .tab.on{color:var(--accent-ink);background:var(--accent);transform:scale(1.04)}
-  .tab .i{font-size:22px;display:block;margin-bottom:1px}
+  .tab{flex:1;text-align:center;padding:11px 4px 10px;border-radius:20px;
+    font-size:12.5px;font-weight:900;letter-spacing:-.02em;color:var(--tc);cursor:pointer;position:relative;
+    background:var(--tbg);border:1.5px solid var(--tbd);box-shadow:0 4px 0 0 var(--tsh);
+    transition:transform .09s ease,box-shadow .09s ease,background .18s,color .18s}
+  .tab .i{font-size:26px;display:block;margin-bottom:2px}
+  .tab .ic{width:30px;height:30px;object-fit:contain;display:block;margin:0 auto 3px;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,.22));transition:transform .18s}
+  .tab:active{transform:translateY(4px);box-shadow:0 0 0 0 var(--tsh)}
+  .tab.on{color:#fff;background:var(--tgrad);border-color:transparent;
+    box-shadow:0 6px 0 0 var(--tsh),0 10px 16px rgba(0,0,0,.20);
+    transform:translateY(-3px) scale(1.06)}
+  .tab.on .ic{transform:scale(1.16);filter:drop-shadow(0 3px 4px rgba(0,0,0,.32))}
+  .tab.on:active{transform:translateY(1px) scale(1.06);box-shadow:0 3px 0 0 var(--tsh)}
+  #t-home   {--tc:#EA580C;--tbg:rgba(249,115,22,.14);--tbd:rgba(249,115,22,.30);--tsh:#C2410C;--tgrad:linear-gradient(180deg,#FB923C,#F97316)}
+  #t-workout{--tc:#DC2626;--tbg:rgba(239,68,68,.13);--tbd:rgba(239,68,68,.30);--tsh:#B91C1C;--tgrad:linear-gradient(180deg,#F87171,#EF4444)}
+  #t-capital{--tc:#D97706;--tbg:rgba(245,158,11,.15);--tbd:rgba(245,158,11,.30);--tsh:#B45309;--tgrad:linear-gradient(180deg,#FBBF24,#F59E0B)}
+  #t-invite {--tc:#DB2777;--tbg:rgba(236,72,153,.13);--tbd:rgba(236,72,153,.30);--tsh:#BE185D;--tgrad:linear-gradient(180deg,#F472B6,#EC4899)}
 </style>
 </head>
 <body>
