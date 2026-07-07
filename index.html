@@ -197,6 +197,14 @@
   #t-workout{--tc:#DC2626;--tbg:rgba(239,68,68,.13);--tbd:rgba(239,68,68,.30);--tsh:#B91C1C;--tgrad:linear-gradient(180deg,#F87171,#EF4444)}
   #t-capital{--tc:#D97706;--tbg:rgba(245,158,11,.15);--tbd:rgba(245,158,11,.30);--tsh:#B45309;--tgrad:linear-gradient(180deg,#FBBF24,#F59E0B)}
   #t-invite {--tc:#DB2777;--tbg:rgba(236,72,153,.13);--tbd:rgba(236,72,153,.30);--tsh:#BE185D;--tgrad:linear-gradient(180deg,#F472B6,#EC4899)}
+  .faq details{background:var(--surface);border:1px solid var(--brdr);border-radius:16px;margin-bottom:10px;overflow:hidden;box-shadow:0 3px 0 0 var(--shadow-card-color)}
+  .faq summary{list-style:none;cursor:pointer;padding:15px 16px;font-weight:800;font-size:14.5px;color:var(--ink);display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:'+';font-size:22px;line-height:1;color:var(--brand);font-weight:900;flex:none;transition:transform .2s}
+  .faq details[open] summary::after{content:'\2013'}
+  .faq details[open] summary{color:var(--brand-dark)}
+  .faq p{padding:0 16px 15px;font-size:13.5px;color:var(--slate);line-height:1.55;margin:0}
+  .faq p b{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -236,6 +244,11 @@
     <button class="qrow" onclick="go('invite')">
       <div class="ic" style="background:rgba(16,185,129,.12)"><svg viewBox="0 0 24 24" style="stroke:var(--brand)"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
       <div class="tt"><b>Позвать друзей</b><span>Бонус тебе и другу · держите ритм</span></div>
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button class="qrow" onclick="go('about')">
+      <div class="ic" style="background:rgba(6,182,212,.12)"><svg viewBox="0 0 24 24" style="stroke:var(--cyan)"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></div>
+      <div class="tt"><b>О проекте</b><span>Почему это работает · ответы на вопросы</span></div>
       <svg class="chev" width="20" height="20" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
     </button>
   </div>
@@ -330,6 +343,22 @@
     <button class="btn dark" onclick="go('home')">На главную</button>
   </div>
 
+  <!-- ABOUT / FAQ -->
+  <div class="screen" id="s-about">
+    <div class="top"><span class="m">🦫</span><div><h1>О проекте</h1><div class="sub">Почему PushUp — не просто счётчик</div></div></div>
+    <div class="faq">
+      <details open><summary>Почему это должно выстрелить?</summary><p>Потому что уже выстрелило в соседней категории. Duolingo взял скучную ежедневную дисциплину (язык) и через стрики + лиги + freemium вырастил её до 56,5 млн ежедневных пользователей и $748 млн выручки за 2024 год — с прибылью. Мы переносим ту же проверенную конструкцию на отжимания, а не изобретаем модель заново.</p></details>
+      <details><summary>Чем вы лучше обычного счётчика отжиманий?</summary><p>Счётчик — коммодити: у лидера 10 млн+ загрузок, есть даже open-source. Но никто не соединил счёт с полной мета-игрой: стрик + заморозка + XP + лиги + эволюция капибары + реферал. Наш ров — не подсчёт, а система привычки и бренд. Счётчик — это дверь, а не продукт.</p></details>
+      <details><summary>Duolingo про языки — при чём тут отжимания?</summary><p>Аналогия не про язык, а про поведение: тяжёлая ежедневная дисциплина, которую человек сам бросает. Duolingo доказал, что стрик и страх его потерять держат сильнее мотивации. Отжимания — та же природа привычки. Разница в том, что фитнес физически тяжелее — это мы признаём и закладываем в дизайн.</p></details>
+      <details><summary>Где доказательство, что модель работает?</summary><p>Публичная отчётность Duolingo перед SEC: выручка ×2 за два года ($369M → $531M → $748M), чистая прибыль $88,6 млн, маржа ~73%, капитализация ~$6 млрд. Плюс прецеденты помельче на той же механике (Finch — ~$30M ARR без венчура). Геймифицированная привычка монетизируется — это факт, не обещание.</p></details>
+      <details><summary>Это не очередной move-to-earn, который рухнет как StepN?</summary><p>Нет. StepN и Axie умерли, потому что награда была деньгами — как только выплаты стали извлекаемыми, приложение превратилось в пирамиду. У нас награда нематериальная: XP, статус, стрик, эволюция капибары. Внутренняя мотивация — ровно то, что удержало Duolingo и убило move-to-earn. Мы намеренно на правильной стороне.</p></details>
+      <details><summary>Сколько платящих у Duolingo и почему это важно?</summary><p>12,5 млн платящих при 137,8 млн месячных пользователей (Q1 2026) — платит всего ~9%. Freemium не требует, чтобы платили все: однозначная конверсия при большой бесплатной базе уже даёт около $1 млрд выручки в год. Это и есть модель, которую мы строим.</p></details>
+      <details><summary>А retention в фитнесе не хуже, чем в языках?</summary><p>Хуже, и мы это не прячем. У фитнес-приложений D30 обычно ~3–12% против DAU/MAU ~40% у Duolingo. Наш ответ — тот же стрик + заморозка + дневная цель, что вытянули Duolingo, и честный proof-of-effort (анти-чит), чтобы лиги были настоящими. Мы строим не счётчик, а систему привычки.</p></details>
+    </div>
+    <button class="btn dark" onclick="go('home')" style="margin-top:6px">На главную</button>
+    <div class="spacer"></div>
+  </div>
+
   <div class="tabbar">
     <div class="tab on" id="t-home" onclick="go('home')"><img class="ic" src="assets/nav-home.png" alt="">Главная</div>
     <div class="tab" id="t-workout" onclick="go('workout')"><img class="ic" src="assets/nav-workout.png" alt="">Тренировка</div>
@@ -369,7 +398,7 @@
   if(user && user.first_name){ document.getElementById('greet').textContent='Привет, '+user.first_name+'!'; }
 
   // ---- navigation ----
-  var screens=['home','workout','result','capital','invite'];
+  var screens=['home','workout','result','capital','invite','about'];
   var tabNames=['home','workout','capital','invite'];
   window.go=function(name){
     screens.forEach(function(s){ document.getElementById('s-'+s).classList.toggle('on', s===name); });
