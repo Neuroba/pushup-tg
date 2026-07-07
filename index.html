@@ -49,7 +49,7 @@
   .top .streakpill .e{font-size:18px} .top .streakpill .n{font-size:15px}
 
   /* buttons — 3D-нажатие как в приложении */
-  .btn{border:0;border-radius:var(--r-2xl);padding:16px;font-size:16px;font-weight:900;cursor:pointer;width:100%;
+  .btn{border:0;border-radius:var(--r-2xl);padding:21px;font-size:18.5px;font-weight:900;cursor:pointer;width:100%;
     font-family:inherit;transition:transform .1s ease,box-shadow .1s ease}
   .btn.primary{background:var(--grad-energy);color:#fff;box-shadow:var(--shadow-button)}
   .btn.primary:active{transform:translateY(4px);box-shadow:none}
@@ -68,7 +68,7 @@
   .st .v{font-size:26px;font-weight:900;color:var(--ink)} .st .v.g{color:var(--xp)} .st .v.o{color:var(--brand)}
   .st .k{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;font-weight:800}
   .startbtn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;cursor:pointer;
-    background:var(--grad-energy);color:#fff;border:0;border-radius:var(--r-3xl);padding:20px;
+    background:var(--grad-energy);color:#fff;border:0;border-radius:var(--r-3xl);padding:24px;
     box-shadow:var(--shadow-button);font-family:inherit;transition:transform .1s ease,box-shadow .1s ease}
   .startbtn:active{transform:translateY(4px);box-shadow:none}
   .startbtn .l{display:flex;align-items:center;gap:14px}
@@ -77,10 +77,10 @@
   .startbtn b{display:block;font-size:17px;font-weight:900} .startbtn span{display:block;font-size:13px;font-weight:700;opacity:.92;margin-top:2px}
   .startbtn .chev{stroke:#fff;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.8;flex:none}
   .qrow{display:flex;align-items:center;gap:14px;width:100%;text-align:left;cursor:pointer;background:var(--surface);
-    border:1px solid var(--brdr);border-radius:var(--r-2xl);padding:14px 16px;box-shadow:var(--shadow-card);font-family:inherit;
+    border:1px solid var(--brdr);border-radius:var(--r-2xl);padding:19px 18px;box-shadow:var(--shadow-card);font-family:inherit;
     transition:transform .1s ease,box-shadow .1s ease}
   .qrow:active{transform:translateY(3px);box-shadow:0 3px 0 0 var(--shadow-card-color)}
-  .qrow .ic{width:44px;height:44px;border-radius:14px;flex:none;display:grid;place-items:center;background:rgba(234,179,8,.14)}
+  .qrow .ic{width:52px;height:52px;border-radius:15px;flex:none;display:grid;place-items:center;background:rgba(234,179,8,.14)}
   .qrow .ic svg{width:23px;height:23px;stroke:var(--xp);stroke-width:2.25;fill:none;stroke-linecap:round;stroke-linejoin:round}
   .qrow .tt{flex:1} .qrow .tt b{display:block;font-size:15px;font-weight:800;color:var(--ink)}
   .qrow .tt span{display:block;font-size:12px;font-weight:700;color:var(--slate);margin-top:2px}
@@ -88,7 +88,7 @@
 
   /* маскот: аватар-эволюция (пьедестал кодом), ember, иконки табов */
   .streakpill .ember{width:22px;height:22px;object-fit:contain;display:block}
-  .tab .ic{width:27px;height:27px;object-fit:contain;display:block;margin:0 auto 1px;opacity:.55;transition:opacity .15s}
+  .tab .ic{width:40px;height:40px;object-fit:contain;display:block;margin:0 auto 3px;opacity:.55;transition:opacity .15s}
   .tab.on .ic{opacity:1}
   .avatar{position:relative;display:grid;place-items:center;height:158px;margin-bottom:2px}
   .avatar .glow{position:absolute;bottom:10px;width:180px;height:70px;border-radius:50%;z-index:0;
@@ -174,9 +174,9 @@
     pointer-events:none;transition:all .25s ease;z-index:60;max-width:88%;box-shadow:0 10px 24px rgba(0,0,0,.25)}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .tabbar{display:flex;gap:6px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+  .tabbar{display:flex;gap:6px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));
     border-top:1px solid var(--brdr);background:var(--surface)}
-  .tab{flex:1;text-align:center;padding:8px 4px;border-radius:16px;font-size:11px;font-weight:800;color:var(--slate);cursor:pointer}
+  .tab{flex:1;text-align:center;padding:13px 4px;border-radius:18px;font-size:13.5px;font-weight:800;color:var(--slate);cursor:pointer}
   .tab.on{color:var(--accent-ink);background:var(--accent);transform:scale(1.04)}
   .tab .i{font-size:22px;display:block;margin-bottom:1px}
 </style>
@@ -288,7 +288,7 @@
   <div class="screen" id="s-invite">
     <div class="top"><span class="m">🎁</span><div><h1>Позвать друзей</h1><div class="sub">Держите дисциплину вместе</div></div></div>
     <div class="hero">
-      <div class="avatar" style="height:128px;margin-bottom:0"><div class="glow"></div><img src="assets/coach-cheer.png" style="width:auto"></div>
+      <div class="avatar" style="height:132px;margin-bottom:0"><div class="glow"></div><img src="assets/nav-friends.png" style="width:auto"></div>
       <h2>Зови друзей в PushUp</h2>
       <p>Каждый друг — плюс к твоей команде дисциплины. Вы оба получаете бонус на старте.</p>
     </div>
@@ -316,7 +316,7 @@
     <div class="tab on" id="t-home" onclick="go('home')"><img class="ic" src="assets/nav-home.png" alt="">Главная</div>
     <div class="tab" id="t-workout" onclick="go('workout')"><img class="ic" src="assets/nav-workout.png" alt="">Тренировка</div>
     <div class="tab" id="t-capital" onclick="go('capital')"><img class="ic" src="assets/nav-awards.png" alt="">Капитал</div>
-    <div class="tab" id="t-invite" onclick="go('invite')"><img class="ic" src="assets/nav-rating.png" alt="">Друзья</div>
+    <div class="tab" id="t-invite" onclick="go('invite')"><img class="ic" src="assets/nav-friends.png" alt="">Друзья</div>
   </div>
 </div>
 
