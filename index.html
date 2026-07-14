@@ -209,10 +209,88 @@
   .abt-intro .ai-t{font-weight:900;font-size:15.5px;color:var(--brand-dark);margin-bottom:6px}
   .abt-intro .ai-p{font-size:13.5px;color:var(--slate);line-height:1.55}
   .abt-intro .ai-p b{color:var(--ink)}
+
+  /* ONBOARDING — мультидисциплина (зеркало нативного онбординга) */
+  .ob-dots{display:flex;gap:6px;justify-content:center}
+  .ob-dots i{width:7px;height:7px;border-radius:50%;background:var(--brdr);transition:all .2s}
+  .ob-dots i.on{background:var(--brand);width:20px;border-radius:6px}
+  .ob-step{display:none;flex-direction:column;gap:15px;flex:1;min-height:0}
+  .ob-step.on{display:flex}
+  .ob-h{font-size:23px;font-weight:900;letter-spacing:-.02em;color:var(--ink);margin:8px 0 0;line-height:1.18}
+  .ob-sub{font-size:13.5px;font-weight:700;color:var(--slate);margin-top:-8px}
+  .ob-input{width:100%;border:1.5px solid var(--brdr);background:var(--surface);border-radius:var(--r-xl);
+    padding:17px 18px;font-size:17px;font-weight:800;color:var(--ink);font-family:inherit;box-shadow:var(--shadow-card)}
+  .ob-input:focus{outline:none;border-color:var(--brand)}
+  .ob-list{display:flex;flex-direction:column;gap:10px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .opt{display:flex;align-items:center;gap:13px;width:100%;text-align:left;cursor:pointer;background:var(--surface);
+    border:1.5px solid var(--brdr);border-radius:var(--r-xl);padding:15px 16px;font-family:inherit;
+    box-shadow:var(--shadow-card);transition:transform .1s,box-shadow .1s,border-color .15s,background .15s}
+  .opt:active{transform:translateY(2px);box-shadow:0 2px 0 0 var(--shadow-card-color)}
+  .opt.sel{border-color:var(--brand);background:var(--accent)}
+  .opt .e{font-size:24px;flex:none;width:30px;text-align:center}
+  .opt .ot{flex:1} .opt b{font-size:15.5px;font-weight:800;color:var(--ink);display:block}
+  .opt .os{font-size:12px;font-weight:700;color:var(--slate);margin-top:1px}
+  .opt .ck{margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid var(--brdr);flex:none;
+    display:grid;place-items:center;transition:all .15s}
+  .opt.sel .ck{border-color:var(--brand);background:var(--brand)}
+  .opt.sel .ck::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+  .ob-prog{background:var(--accent);border:1px solid var(--brdr);border-radius:var(--r-2xl);padding:16px 18px;box-shadow:var(--shadow-card)}
+  .ob-prog .pl{display:flex;align-items:center;gap:11px;padding:6px 0;font-size:15px;font-weight:800;color:var(--ink)}
+  .ob-prog .pl .g{margin-left:auto;font-weight:900;color:var(--brand-dark)}
+  .ob-ifthen{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);border-radius:var(--r-xl);
+    padding:14px 16px;font-size:14px;font-weight:800;color:var(--flame);text-align:center;line-height:1.4}
 </style>
 </head>
 <body>
 <div class="app">
+
+  <!-- ONBOARDING · мультидисциплина -->
+  <div class="screen" id="s-onboard">
+    <div class="ob-dots" id="ob-dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+
+    <div class="ob-step on" data-step="0">
+      <div class="avatar" style="height:118px;margin-bottom:0"><div class="glow"></div><img src="assets/coach-up.png" style="width:auto;height:118px"></div>
+      <div class="ob-h">Привет! Как тебя зовут?</div>
+      <div class="ob-sub">Капибара будет обращаться к тебе по имени.</div>
+      <input class="ob-input" id="ob-name" placeholder="Твоё имя" autocomplete="off" maxlength="24">
+      <div class="spacer"></div>
+    </div>
+
+    <div class="ob-step" data-step="1">
+      <div class="ob-h">Зачем тебе движение?</div>
+      <div class="ob-sub">Твой «зачем» держит дольше любой мотивации.</div>
+      <div class="ob-list" id="ob-motives"></div>
+    </div>
+
+    <div class="ob-step" data-step="2">
+      <div class="ob-h">Твой уровень сейчас</div>
+      <div class="ob-sub">Начнём с посильного — дальше растём по твоему темпу.</div>
+      <div class="ob-list" id="ob-levels"></div>
+    </div>
+
+    <div class="ob-step" data-step="3">
+      <div class="ob-h">Что качаем?</div>
+      <div class="ob-sub">Выбери одно или оба — считаю движением, без кнопок. Поменять можно позже.</div>
+      <div class="ob-list" id="ob-disc"></div>
+    </div>
+
+    <div class="ob-step" data-step="4">
+      <div class="ob-h">Привяжем к привычке</div>
+      <div class="ob-sub">«После X — твоя мини-серия». Сильнейший приём, чтобы не забывать.</div>
+      <div class="ob-list" id="ob-anchors"></div>
+    </div>
+
+    <div class="ob-step" data-step="5">
+      <div class="avatar" style="height:108px;margin-bottom:0"><div class="glow"></div><img src="assets/coach-win.png" style="width:auto;height:108px"></div>
+      <div class="ob-h" id="ob-done-h">Готово! 🎉</div>
+      <div class="ob-sub">Твоя стартовая программа на день:</div>
+      <div class="ob-prog" id="ob-prog"></div>
+      <div class="ob-ifthen" id="ob-ifthen"></div>
+      <div class="spacer"></div>
+    </div>
+
+    <button class="btn primary" id="ob-next" onclick="obNext()">Дальше</button>
+  </div>
 
   <!-- HOME -->
   <div class="screen on" id="s-home">
@@ -226,11 +304,12 @@
       <div class="lvlbadge">🏆 <span id="h-lvl">Уровень 1</span></div>
       <div class="lvlbar"><i id="h-lvlbar"></i></div>
       <h2 id="h-stage">Новичок</h2>
-      <p>Двигайся — растёшь в уровне и эволюции. Отжимания, махи, приседания — любое движение.</p>
+      <p id="h-why">Двигайся — растёшь в уровне и эволюции. Любое движение считается.</p>
     </div>
+    <div class="taskban" id="h-ifthen" style="display:none"></div>
     <div class="statrow">
-      <div class="st"><div class="v o mono" id="h-total">0</div><div class="k">всего</div></div>
-      <div class="st"><div class="v g mono" id="h-points">0</div><div class="k">баллы 🪙</div></div>
+      <div class="st"><div class="v o mono" id="h-total">0</div><div class="k">повторов всего</div></div>
+      <div class="st"><div class="v g mono" id="h-points">0</div><div class="k">XP ⚡</div></div>
     </div>
     <div class="spacer"></div>
     <button class="startbtn" onclick="go('workout')">
@@ -297,24 +376,25 @@
   <div class="screen" id="s-capital">
     <div class="top"><span class="m">🦫</span><div><h1>Мой капитал</h1><div class="sub">Твоя валюта дисциплины</div></div></div>
     <div class="cap-hero">
-      <div class="lbl">🪙 PushPoints</div>
+      <div class="lbl">⚡ XP дисциплины</div>
       <div class="big mono" id="c-points">0</div>
-      <div class="u">баланс дисциплины</div>
+      <div class="u">кем ты становишься</div>
     </div>
     <div class="fund">
-      <div class="k">🛒 Трать баллы на</div>
-      <div class="amt" style="font-size:15px;font-weight:800;line-height:1.5">🧊 Заморозка стрика · 🎨 Кастом капибары · ⚡ Буст · 🤺 Вызов друга</div>
-      <div class="note">Копишь тренировками — тратишь в игре. Твоя лига: топ <b id="c-pct">—</b> по дисциплине.</div>
+      <div class="k">🛒 Скоро: трать жёлуди на</div>
+      <div class="amt" style="font-size:15px;font-weight:800;line-height:1.5">🧊 Заморозка серии · 🎨 Кастом капибары · ⚡ Буст · 🤺 Вызов друга</div>
+      <div class="note">XP растёт за события — не за каждый повтор. Твоя лига: топ <b id="c-pct">—</b> по дисциплине.</div>
     </div>
     <div class="how">
-      <h3>Как копить быстрее</h3>
+      <h3>Как растёт XP</h3>
       <ul>
-        <li><span>💪</span> Каждое отжимание <span class="pts">+1</span></li>
-        <li><span>🎯</span> Дневная цель <span class="pts">+25</span></li>
-        <li><span>🔥</span> Серия <span class="pts">+10 × дни</span></li>
+        <li><span>🎯</span> Программа дня закрыта <span class="pts">+40</span></li>
+        <li><span>🔥</span> Серия жива (короткий подход) <span class="pts">+15</span></li>
+        <li><span>⚡</span> Первое движение дня <span class="pts">+5</span></li>
+        <li><span>🏅</span> Вехи серии 7 / 30 / 100 <span class="pts">+50…+500</span></li>
       </ul>
     </div>
-    <div class="disc">PushPoints — внутренняя игровая валюта дисциплины: копишь тренировками, тратишь в игре. Не деньги, не инвестиция, не выводится.</div>
+    <div class="disc">XP — журнал «кем ты становишься», а не зарплата за повтор. Платят события-достижения: закрытый день, живая серия, вехи. Повтор — это счётчик и гейт, а рост идёт в регулярности. Не деньги, не инвестиция, не выводится.</div>
     <div class="spacer"></div>
     <button class="btn primary" onclick="go('workout')">💪 Тренироваться</button>
   </div>
@@ -365,7 +445,8 @@
       <details><summary>В Telegram или в приложении — в чём разница?</summary><p>В приложении (iOS и Android) — <b>полный доступ ко всем форматам</b>, включая счёт отжиманий датчиком приближения. В Telegram считаются только движения по акселерометру — <b>прыжки и приседания</b>: отжимания веб-датчиком не посчитать, это ограничение Telegram. Хочешь все форматы и полный счёт — ставь приложение.</p></details>
       <details><summary>Что за общий фонд?</summary><p>Премиум можно оплатить и Telegram-звёздами — <b>по цене твоего региона</b> (🇦🇷 $12 · 🇷🇺 ~$18 · 🌍 ~$27 в год). Это полная подписка на все платформы: открывает скачивание приложения на iPhone/Android, виджеты и все функции — не только Telegram-версию. Деньги подписок идут в <b>общий фонд сообщества</b> — челленджи и призы (премиум-дни, косметика капибары, мерч, бусты). Это награды в игре, а <b>не деньги</b>.</p></details>
     </div>
-    <button class="btn dark" onclick="go('home')" style="margin-top:6px">На главную</button>
+    <button class="btn ghost" onclick="startOnboarding()" style="margin-top:6px">🔄 Пройти анкету заново</button>
+    <button class="btn dark" onclick="go('home')">На главную</button>
     <div class="spacer"></div>
   </div>
 
@@ -395,51 +476,156 @@
   function hap(t){ try{ tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t||'medium'); }catch(e){}
     if(navigator.vibrate) try{ navigator.vibrate(18); }catch(e){} }
 
-  // ---- state (localStorage; Supabase-sync — след. шаг) ----
-  var KEY='pushup_tg_v1';
+  // ==== МОДЕЛЬ ДИСЦИПЛИН (зеркало src/lib/disciplines.ts; в TG считаем акселерометром
+  //      только присед/прыжки — отжимания веб-датчиком не посчитать) ====
+  var DISC={
+    squat:{ emoji:'🦵', ru:'Приседания', ru2:'приседаний', repWeight:0.6,
+            startGoal:{beginner:8,novice:15,intermediate:20,advanced:25}, cue:{word:'Присядь',ar:'↓'} },
+    jump:{  emoji:'🤸', ru:'Прыжки', ru2:'прыжков', repWeight:0.4,
+            startGoal:{beginner:15,novice:25,intermediate:35,advanced:45}, cue:{word:'Прыгай',ar:'↑'} }
+  };
+  var LEVELS=[
+    {k:'beginner',e:'🌱',t:'Новичок',s:'Давно не тренировался'},
+    {k:'novice',e:'💪',t:'Начальный',s:'Иногда занимаюсь'},
+    {k:'intermediate',e:'🔥',t:'Средний',s:'Тренируюсь регулярно'},
+    {k:'advanced',e:'🦾',t:'Продвинутый',s:'В хорошей форме'}
+  ];
+  var MOTIVES=[
+    {k:'energy',e:'⚡',t:'Энергия и бодрость'},{k:'calm',e:'🧘',t:'Спокойствие и ясная голова'},
+    {k:'discipline',e:'🧠',t:'Дисциплина и характер'},{k:'strength',e:'🦾',t:'Сила и форма'},
+    {k:'weight',e:'🔥',t:'Стать легче и активнее'}
+  ];
+  var WHY={energy:'Ты начинал ради энергии и бодрости.',calm:'Ты начинал ради спокойствия и ясной головы.',
+    discipline:'Ты начинал ради дисциплины и характера.',strength:'Ты начинал ради силы и формы.',
+    weight:'Ты начинал, чтобы стать легче и активнее.'};
+  var ANCHORS=[
+    {k:'coffee',e:'☕',t:'После утреннего кофе',w:'утреннего кофе'},{k:'teeth',e:'🪥',t:'После чистки зубов',w:'чистки зубов'},
+    {k:'lunch',e:'🍽️',t:'После обеда',w:'обеда'},{k:'home',e:'🏠',t:'Когда прихожу домой',w:'прихода домой'},
+    {k:'none',e:'⏰',t:'Без якоря',w:''}
+  ];
+  function anchorWord(k){ for(var i=0;i<ANCHORS.length;i++) if(ANCHORS[i].k===k) return ANCHORS[i].w; return ''; }
+
+  // ==== СОБЫТИЙНЫЙ XP (зеркало src/lib/xp.ts) — платят события, не повторы ====
+  var XP_ENDOWED=5, XP_DAY_CLOSED=40, XP_STREAK_ALIVE=15;
+  var MILE_XP={7:50,30:150,100:500,365:2000}, MILE_ACORN={7:5,30:15,100:50,365:200};
+  var ALIVE_EQUIV=5; // порог «серия жива»: ≥5 повторов-эквивалентов (repWeight)
+  function kStreak(s){ return s>=100?1.5:s>=30?1.25:s>=7?1.1:1.0; }
+  function levelForXp(xp){ xp=Math.max(0,Math.floor(xp||0)); var l=1; while(50*l*(l+1)<=xp) l++; return l; }
+  function xpForLevel(l){ l=Math.max(1,Math.floor(l)); return 50*(l-1)*l; }
+  function repEquiv(move,reps){ var d=DISC[move]; return Math.max(0,reps)*(d?d.repWeight:0.5); }
+
+  // ---- state (localStorage; сервер авторитетен через tg_sync) ----
+  var KEY='pushup_tg_v1', PKEY='pushup_tg_profile';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
-  function save(d){ try{ localStorage.setItem(KEY, JSON.stringify(d)); }catch(e){} /* TODO: syncSupabase(d) */ }
+  function save(d){ try{ localStorage.setItem(KEY, JSON.stringify(d)); }catch(e){} }
   var db = load();
   db.points=db.points||0; db.total=db.total||0; db.streak=db.streak||0; db.lastDay=db.lastDay||null;
-  db.invited=db.invited||0;
+  db.longest=db.longest||0; db.freezes=(db.freezes==null?2:db.freezes); db.acorns=db.acorns||0;
+  db.invited=db.invited||0; db.taskDay=db.taskDay||0;
+
+  // ---- профиль онбординга (name/motive/level/disciplines/anchor) ----
+  function loadProfile(){ try{ var p=JSON.parse(localStorage.getItem(PKEY)); return (p&&p.disciplines)?p:null; }catch(e){ return null; } }
+  function saveProfile(p){ try{ localStorage.setItem(PKEY, JSON.stringify(p)); }catch(e){} }
+  var profile = loadProfile();
 
   // greet from Telegram user
   var user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
   if(user && user.first_name){ document.getElementById('greet').textContent='Привет, '+user.first_name+'!'; }
 
   // ---- navigation ----
-  var screens=['home','workout','result','capital','invite','about'];
+  var screens=['onboard','home','workout','result','capital','invite','about'];
   var tabNames=['home','workout','capital','invite'];
   window.go=function(name){
     screens.forEach(function(s){ document.getElementById('s-'+s).classList.toggle('on', s===name); });
     tabNames.forEach(function(s){
       var t=document.getElementById('t-'+s); if(t) t.classList.toggle('on', s===name); });
+    var tb=document.querySelector('.tabbar'); if(tb) tb.style.display = (name==='onboard') ? 'none' : '';
     if(name==='home') renderHome();
     if(name==='capital') renderCapital();
     if(name==='workout') resetWorkout();
     if(name==='invite') renderInvite();
     window.scrollTo(0,0);
   };
-  // 10 стадий эволюции по накопленным баллам
-  var STAGES=[{t:0,n:'Новичок'},{t:60,n:'Боец'},{t:180,n:'Атлет'},{t:400,n:'Воин'},{t:800,n:'Мастер'},
-    {t:1500,n:'Чемпион'},{t:2600,n:'Ветеран'},{t:4200,n:'Элита'},{t:6500,n:'Легенда'},{t:10000,n:'Титан'}];
-  function stageOf(pts){ var i=0; for(var k=0;k<STAGES.length;k++){ if(pts>=STAGES[k].t) i=k; } return i; }
+  // 10 стадий эволюции — по УРОВНЮ (кривая XP 50·n·(n+1), как в приложении)
+  var STAGE_NAMES=['Новичок','Боец','Атлет','Воин','Мастер','Чемпион','Ветеран','Элита','Легенда','Титан'];
   function renderHome(){
-    var pts=db.points||0;
+    var xp=db.points||0, lvl=levelForXp(xp), si=Math.min(lvl,10);
     document.getElementById('h-streak').textContent=db.streak;
     document.getElementById('h-total').textContent=(db.total||0).toLocaleString('ru');
-    document.getElementById('h-points').textContent=pts.toLocaleString('ru');
+    document.getElementById('h-points').textContent=xp.toLocaleString('ru');
     document.getElementById('h-ember').src='assets/ember-'+((db.streak||0)>0?'bright':'out')+'.png';
-    var si=stageOf(pts), st=STAGES[si], nx=STAGES[Math.min(si+1,STAGES.length-1)];
-    document.getElementById('h-avatar').src='assets/stage-'+('0'+(si+1)).slice(-2)+'.png';
-    document.getElementById('h-lvl').textContent='Уровень '+(si+1);
-    document.getElementById('h-stage').textContent=st.n;
-    var prog=(si>=STAGES.length-1)?100:Math.round((pts-st.t)/(nx.t-st.t)*100);
+    document.getElementById('h-avatar').src='assets/stage-'+('0'+si).slice(-2)+'.png';
+    document.getElementById('h-lvl').textContent='Уровень '+lvl;
+    document.getElementById('h-stage').textContent=STAGE_NAMES[si-1];
+    var floor=xpForLevel(lvl), ceil=xpForLevel(lvl+1), prog=Math.round((xp-floor)/(ceil-floor)*100);
     document.getElementById('h-lvlbar').style.width=Math.max(8,Math.min(100,prog))+'%';
+    // персонализация из профиля: «зачем» + if-then якорь
+    var why=document.getElementById('h-why'), ift=document.getElementById('h-ifthen');
+    if(profile){
+      if(why && profile.motive && WHY[profile.motive]) why.textContent=WHY[profile.motive];
+      var aObj=null; for(var i=0;i<ANCHORS.length;i++) if(ANCHORS[i].k===profile.anchor) aObj=ANCHORS[i];
+      if(ift){ if(aObj && aObj.w){ ift.style.display=''; ift.textContent=aObj.e+' После '+aObj.w+' — твоя мини-серия'; } else ift.style.display='none'; }
+    }
   }
-  function renderCapital(){ document.getElementById('c-points').textContent=db.points.toLocaleString('ru');
+  function renderCapital(){ document.getElementById('c-points').textContent=(db.points||0).toLocaleString('ru');
     var pct = db.points>3000?'8%':db.points>1000?'20%':db.points>200?'45%':'—';
     document.getElementById('c-pct').textContent=pct; }
+
+  // ==== ОНБОРДИНГ (мультидисциплина: имя→зачем→уровень→дисциплины→якорь→программа) ====
+  var ob={step:0,name:'',motive:null,level:'novice',disciplines:['squat','jump'],anchor:'coffee'};
+  var OB_STEPS=6;
+  function obOpt(e,title,sub,sel){
+    return '<button class="opt'+(sel?' sel':'')+'"><span class="e">'+e+'</span>'+
+      '<span class="ot"><b>'+title+'</b>'+(sub?'<span class="os">'+sub+'</span>':'')+'</span>'+
+      '<span class="ck"></span></button>'; }
+  function obBind(box,items,onPick){ [].forEach.call(box.children,function(el,i){
+    el.onclick=function(){ onPick(items[i].k,i); hap('light'); }; }); }
+  function obRenderMotives(){ var box=document.getElementById('ob-motives');
+    box.innerHTML=MOTIVES.map(function(m){ return obOpt(m.e,m.t,'',ob.motive===m.k); }).join('');
+    obBind(box,MOTIVES,function(k){ ob.motive=k; obRenderMotives(); }); }
+  function obRenderLevels(){ var box=document.getElementById('ob-levels');
+    box.innerHTML=LEVELS.map(function(m){ return obOpt(m.e,m.t,m.s,ob.level===m.k); }).join('');
+    obBind(box,LEVELS,function(k){ ob.level=k; obRenderLevels(); }); }
+  function obRenderDisc(){ var ids=[{k:'squat'},{k:'jump'}]; var box=document.getElementById('ob-disc');
+    box.innerHTML=ids.map(function(x){ var d=DISC[x.k]; return obOpt(d.emoji,d.ru,'старт: '+d.startGoal[ob.level]+' в день',ob.disciplines.indexOf(x.k)>=0); }).join('');
+    obBind(box,ids,function(k){ var p=ob.disciplines.indexOf(k);
+      if(p>=0){ if(ob.disciplines.length>1) ob.disciplines.splice(p,1); } else ob.disciplines.push(k);
+      obRenderDisc(); }); }
+  function obRenderAnchors(){ var box=document.getElementById('ob-anchors');
+    box.innerHTML=ANCHORS.map(function(m){ return obOpt(m.e,m.t,'',ob.anchor===m.k); }).join('');
+    obBind(box,ANCHORS,function(k){ ob.anchor=k; obRenderAnchors(); }); }
+  function obRenderResult(){
+    document.getElementById('ob-done-h').innerHTML='Готово'+(ob.name?', '+ob.name:'')+'! 🎉';
+    document.getElementById('ob-prog').innerHTML=ob.disciplines.map(function(k){ var d=DISC[k];
+      return '<div class="pl"><span>'+d.emoji+'</span> '+d.ru+' <span class="g">'+d.startGoal[ob.level]+' / день</span></div>'; }).join('');
+    var aw=anchorWord(ob.anchor), ift=document.getElementById('ob-ifthen');
+    if(aw){ var d0=DISC[ob.disciplines[0]]; ift.style.display='';
+      ift.textContent='Каждый день после '+aw+' — '+d0.startGoal[ob.level]+' '+d0.ru2; }
+    else ift.style.display='none'; }
+  function obDot(){ var dots=document.getElementById('ob-dots').children;
+    for(var i=0;i<dots.length;i++) dots[i].classList.toggle('on',i<=ob.step); }
+  function obShow(n){ ob.step=n;
+    [].forEach.call(document.querySelectorAll('#s-onboard .ob-step'),function(el){ el.classList.toggle('on', +el.getAttribute('data-step')===n); });
+    obDot(); document.getElementById('ob-next').textContent=(n===OB_STEPS-1)?'🚀 Погнали!':'Дальше';
+    if(n===1) obRenderMotives(); if(n===2) obRenderLevels(); if(n===3) obRenderDisc();
+    if(n===4) obRenderAnchors(); if(n===5) obRenderResult();
+    if(n===0) setTimeout(function(){ var el=document.getElementById('ob-name'); if(el&&el.focus) el.focus(); },120);
+    var sc=document.getElementById('s-onboard'); if(sc) sc.scrollTop=0; }
+  window.obNext=function(){ hap('light');
+    if(ob.step===0) ob.name=((document.getElementById('ob-name')||{}).value||'').trim();
+    if(ob.step===1 && !ob.motive){ toast('Выбери свой «зачем»'); return; }
+    if(ob.step===3 && !ob.disciplines.length){ toast('Выбери хотя бы одну дисциплину'); return; }
+    if(ob.step<OB_STEPS-1){ obShow(ob.step+1); return; }
+    profile={ version:1, name:ob.name, motive:ob.motive||'discipline', level:ob.level,
+      disciplines:ob.disciplines.slice(), anchor:ob.anchor||'none' };
+    saveProfile(profile);
+    if(profile.name && !(user && user.first_name)) document.getElementById('greet').textContent='Привет, '+profile.name+'!';
+    initTask(); hap('heavy'); go('home'); };
+  window.startOnboarding=function(){ ob={step:0,name:(profile&&profile.name)||'',motive:(profile&&profile.motive)||null,
+    level:(profile&&profile.level)||'novice',disciplines:(profile&&profile.disciplines)?profile.disciplines.slice():['squat','jump'],
+    anchor:(profile&&profile.anchor)||'coffee'};
+    var ni=document.getElementById('ob-name'); if(ni) ni.value=ob.name;
+    obShow(0); go('onboard'); };
 
   // ---- РЕФЕРАЛКА / распространение мини-аппа ----
   var BOT='pushup_xxx_bot';
@@ -489,49 +675,30 @@
       if(by && (!user || String(user.id)!==by)){ db.refBy=by; save(db); } } })();
   sbSync();
 
-  // ---- ЗАДАНИЯ ДНЯ: 30 усиливающихся вариаций (присед/прыжок), сегментами (из tasks.json) ----
-  // move: 'squat'=приседания, 'jump'=прыжки. Задание = цепочка сегментов [move, кол-во].
-  var TASKS=[
-    [['squat',5]],[['squat',8]],[['squat',10]],
-    [['jump',5]],[['jump',8]],[['jump',10]],
-    [['squat',5],['jump',5]],[['squat',8],['jump',5]],[['squat',10],['jump',8]],
-    [['jump',5],['squat',5],['jump',5]],
-    [['squat',12]],[['jump',12]],
-    [['squat',8],['jump',8],['squat',8]],
-    [['jump',10],['squat',10]],
-    [['squat',6],['jump',6],['squat',6],['jump',6]],
-    [['squat',15]],[['jump',15]],
-    [['squat',10],['jump',10],['squat',10]],
-    [['jump',8],['squat',8],['jump',8],['squat',8]],
-    [['squat',12],['jump',12]],
-    [['squat',20]],
-    [['squat',10],['jump',10],['squat',10],['jump',10]],
-    [['squat',15],['jump',15]],
-    [['jump',20]],
-    [['squat',8],['jump',8],['squat',8],['jump',8],['squat',8]],
-    [['squat',15],['jump',15],['squat',15]],
-    [['squat',25]],
-    [['jump',10],['squat',15],['jump',10]],
-    [['squat',12],['jump',12],['squat',12],['jump',12]],
-    [['squat',20],['jump',20],['squat',20]]
-  ];
-  var RU1={squat:'приседаний',jump:'прыжков'}, RU2={squat:'Приседания',jump:'Прыжки'};
-  var CUE={squat:{word:'Присядь',ar:'↓'}, jump:{word:'Прыгай',ar:'↑'}};
+  // ---- ПРОГРАММА ДНЯ из профиля (buildProgram-логика): активные дисциплины × микро-цель уровня ----
+  // Сегмент = [move, кол-во]. Задание дня = по сегменту на каждую активную дисциплину (флэт, ниже порога;
+  // рост — в регулярности/серии, а не в объёме). move: 'squat'=присед, 'jump'=прыжки.
+  var RU1={squat:DISC.squat.ru2,jump:DISC.jump.ru2}, RU2={squat:DISC.squat.ru,jump:DISC.jump.ru};
+  var CUE={squat:DISC.squat.cue, jump:DISC.jump.cue};
+  function activeDisc(){ return (profile&&profile.disciplines&&profile.disciplines.length)?profile.disciplines:['squat','jump']; }
+  function curLevel(){ return (profile&&profile.level)||'novice'; }
+  function buildDayTask(){ return activeDisc().map(function(m){
+    var g=DISC[m].startGoal[curLevel()]||DISC[m].startGoal.novice; return [m,g]; }); }
   function taskName(t){ return t.map(function(s){ return s[1]+' '+RU1[s[0]]; }).join(' + '); }
-  // ---- ПОЗЫ капибары под движение (per-stage): ПЕРЕИСПОЛЬЗУЕМ STAGES/stageOf выше ----
+  // ---- ПОЗЫ капибары под движение (per-stage): стадия = уровень по XP (levelForXp) ----
   // Аватар под ТЕКУЩУЮ стадию юзера. Пока Mac не положил per-stage файлы — HAS_STAGE_POSES=false →
   // санкционированный coach-маскот (stand=coach-up, присед=coach-down, прыжок=coach-cheer).
   // Когда позы стадий лежат в assets/pose/ → HAS_STAGE_POSES=true, берётся stage-NN-{pose}.png.
   var HAS_STAGE_POSES=false;
-  function currentStage(){ return Math.min(STAGES.length, stageOf(db.points)+1); } // 1..10
+  function currentStage(){ return Math.min(10, levelForXp(db.points)); } // 1..10
   function posePath(phase){ // phase = stand|squat|jump
     if(!HAS_STAGE_POSES) return phase==='squat'?'assets/coach-down.png':phase==='jump'?'assets/coach-cheer.png':'assets/coach-up.png';
     return 'assets/pose/stage-'+('0'+currentStage()).slice(-2)+'-'+phase+'.png';
   }
   // ---- rep detector: ПИК МАГНИТУДЫ ускорения — присед/прыжок под ЛЮБЫМ углом ----
-  var running=false, lastPeak=0, armed=true, PEAK_TH=4.0;
-  var taskDay=db.taskDay||0, task=TASKS[taskDay%TASKS.length];
-  var curSeg=0, segReps=0, taskReps=0, taskGoal=0;
+  var running=false, lastPeak=0, armed=true, PEAK_TH=4.0, MIN_REP_MS=550, SESSION_CAP=600;
+  var taskDay=db.taskDay||0, task=buildDayTask();
+  var curSeg=0, segReps=0, taskReps=0, taskGoal=0, sessEquiv=0;
   var elCount=document.getElementById('w-count'), elGoal=document.getElementById('w-goal'),
       elState=document.getElementById('w-state'), elHint=document.getElementById('w-hint'),
       elBtn=document.getElementById('w-btn'), elCoach=document.getElementById('w-coach'),
@@ -562,13 +729,13 @@
         if(p.life>0 && p.y<H+20){ alive=true; x.save(); x.globalAlpha=Math.max(0,p.life); x.translate(p.x,p.y); x.rotate(p.r);
           x.fillStyle=p.c; x.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6); x.restore(); } }
       if(alive) requestAnimationFrame(frame); else x.clearRect(0,0,W,H); })(); }
-  function initTask(){ taskDay=db.taskDay||0; task=TASKS[taskDay%TASKS.length];
-    curSeg=0; segReps=0; taskReps=0; taskGoal=0;
+  function initTask(){ task=buildDayTask();
+    curSeg=0; segReps=0; taskReps=0; taskGoal=0; sessEquiv=0;
     task.forEach(function(s){ taskGoal+=s[1]; });
-    var mv=task[0][0], dn=(taskDay%TASKS.length)+1;
-    elBan.textContent='Задание дня '+dn+' · '+taskName(task);
+    var mv=task[0][0], dn=(db.taskDay||0)+1;
+    elBan.textContent='Программа дня · '+taskName(task);
     elTitle.textContent=RU2[mv]; elGoal.textContent=task[0][1]; elCount.textContent='0';
-    elSeg.textContent='задание '+dn+' / 30'; elCue.textContent=CUE[mv].word+' '+CUE[mv].ar;
+    elSeg.textContent='день '+dn; elCue.textContent=CUE[mv].word+' '+CUE[mv].ar;
     elState.textContent=RU2[mv]+' · под любым углом'; poseStand(); elSegbar.style.width='0%';
     elWStreak.textContent=db.streak||0;
     elWEmber.src='assets/ember-'+((db.streak||0)>0?'bright':'out')+'.png';
@@ -577,10 +744,11 @@
     poseStand(); elGoal.textContent=segGoal(); elCount.textContent=segReps;
     elCue.textContent=CUE[mv].word+' '+CUE[mv].ar; elTitle.textContent=RU2[mv];
     elState.textContent=RU2[mv]+' · под любым углом';
-    elSeg.textContent='сегмент '+(curSeg+1)+'/'+task.length+' · задание '+((taskDay%TASKS.length)+1)+'/30';
+    elSeg.textContent='сегмент '+(curSeg+1)+'/'+task.length+' · день '+((db.taskDay||0)+1);
     elSegbar.style.width=Math.round(taskReps/taskGoal*100)+'%';
   }
-  function onRep(){ if(!running) return; segReps++; taskReps++;
+  function onRep(){ if(!running) return; if(taskReps>=SESSION_CAP) return; // анти-фарм: потолок за сессию
+    segReps++; taskReps++; sessEquiv+=(DISC[curMove()]?DISC[curMove()].repWeight:0.5); // повторы-эквиваленты (§2)
     elCount.textContent=segReps;
     if(elPop){ elPop.classList.remove('hit'); void elPop.offsetWidth; elPop.classList.add('hit'); }
     elSegbar.style.width=Math.min(100,Math.round(taskReps/taskGoal*100))+'%';
@@ -598,7 +766,7 @@
   function onMotion(ev){ var a=ev.accelerationIncludingGravity; if(!a){ a=ev.acceleration; if(!a) return; }
     var m=Math.sqrt((a.x||0)*(a.x||0)+(a.y||0)*(a.y||0)+(a.z||0)*(a.z||0));
     var lin=Math.abs(m-9.8), now=Date.now();
-    if(lin>PEAK_TH && armed && now-lastPeak>340){ armed=false; lastPeak=now; onRep(); }
+    if(lin>PEAK_TH && armed && now-lastPeak>MIN_REP_MS){ armed=false; lastPeak=now; onRep(); }
     if(lin<PEAK_TH*0.5) armed=true;
   }
 
@@ -622,22 +790,55 @@
     if(!running){ startSensors(); }
     else { running=false; elBtn.textContent='▶︎ Продолжить'; elState.textContent='Пауза'; }
   };
-  // банк очков + экран результата. done=true → задание дня закрыто (бонус +25, taskDay++). Экономика/sbSync как в нативке.
+  // локальные дни (без UTC-дрейфа) — для серии и событий
+  function localDay(d){ d=d||new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  function shiftDay(iso,delta){ var p=iso.split('-'); var d=new Date(+p[0],+p[1]-1,+p[2]); d.setDate(d.getDate()+delta); return localDay(d); }
+  function daysBetween(a,b){ var pa=a.split('-'),pb=b.split('-');
+    return Math.round((new Date(+pb[0],+pb[1]-1,+pb[2])-new Date(+pa[0],+pa[1]-1,+pa[2]))/86400000); }
+
+  // Банк XP + экран результата — СОБЫТИЙНАЯ модель (зеркало xp.ts/streak.ts).
+  // done=true → все сегменты закрыты. Иначе оцениваем по повторам-эквивалентам (§2).
   function bankAndResult(done){
     running=false; window.removeEventListener('devicemotion', onMotion);
-    var did=taskReps, earned=did; // +1/повтор
-    var today=new Date().toISOString().slice(0,10);
-    if(did>0 && db.lastDay!==today){ var y=new Date(Date.now()-86400000).toISOString().slice(0,10);
-      db.streak=(db.lastDay===y)?db.streak+1:1; db.lastDay=today; earned+=10*db.streak; } // стрик-бонус
-    if(done===true){ earned+=25; db.taskDay=taskDay+1; } // бонус за закрытое задание дня
-    db.points+=earned; db.total+=did; save(db); sbSync();
+    var did=taskReps, eq=sessEquiv, today=localDay();
+    var ratio = taskGoal>0 ? taskReps/taskGoal : 0;
+    var closed = (done===true) || ratio>=1;
+    var level = closed ? 'closed' : (eq>=ALIVE_EQUIV ? 'alive' : 'none');
+    var gained=0, acorn=0, milestone=0;
+
+    // 1. Серия двухуровневая: первый засчитанный результат дня двигает цепь (жива ИЛИ закрыт)
+    if(level!=='none' && db.lastDay!==today){
+      if(!db.lastDay){ db.streak=1; }
+      else if(db.lastDay===shiftDay(today,-1)){ db.streak=(db.streak||0)+1; }
+      else { var missed=Math.max(0,daysBetween(db.lastDay,today)-1);
+        if((db.freezes||0)>=missed){ db.freezes-=missed; db.streak=(db.streak||0)+1; } else db.streak=1; }
+      db.lastDay=today; db.longest=Math.max(db.longest||0, db.streak);
+      if(db.streak>0 && db.streak%7===0 && (db.freezes||0)<2) db.freezes=Math.min(2,(db.freezes||0)+1);
+      if(MILE_XP[db.streak]){ milestone=MILE_XP[db.streak]; gained+=milestone; acorn+=MILE_ACORN[db.streak]||0; }
+    }
+    var K=kStreak(db.streak);
+
+    // 2. Endowed-старт: первое движение дня (+5×K)
+    if(did>0 && db.endowedDay!==today){ db.endowedDay=today; gained+=Math.round(XP_ENDOWED*K); }
+    // 3. Событие уровня дня — один раз за день на уровень (per-rep = 0)
+    if(level==='alive' && db.aliveDay!==today){ db.aliveDay=today; gained+=Math.round(XP_STREAK_ALIVE*K); }
+    if(closed && db.closedDay!==today){ db.closedDay=today; gained+=Math.round(XP_DAY_CLOSED*K); db.taskDay=(db.taskDay||0)+1; }
+
+    db.points+=gained; db.total+=did; if(acorn) db.acorns=(db.acorns||0)+acorn;
+    save(db); sbSync();
+
     document.getElementById('r-reps').textContent=did;
-    var ru=document.querySelector('#s-result .rcard .u'); if(ru) ru.textContent='повторов';
-    document.getElementById('r-xp').textContent='+'+(did*10)+' XP';
-    document.getElementById('r-pts').textContent='+'+earned+' 🪙';
-    document.getElementById('r-streak').textContent = done===true
-      ? ('✓ Задание дня закрыто · завтра: '+taskName(TASKS[(taskDay+1)%TASKS.length]))
-      : (db.streak>1? ('🔥 Серия '+db.streak+' дней — держи!') : 'Первый день серии 🔥');
+    var ru=document.querySelector('#s-result .rcard .u'); if(ru) ru.textContent=(did===1?'повтор':'повторов');
+    document.getElementById('r-xp').textContent='+'+gained+' XP';
+    var pts=document.getElementById('r-pts');
+    if(pts){ if(acorn){ pts.style.display=''; pts.textContent='+'+acorn+' 🪙'; } else pts.style.display='none'; }
+    var msg;
+    if(milestone) msg='🏅 Веха! '+db.streak+' дней серии · +'+milestone+' XP';
+    else if(closed) msg='✓ Программа дня закрыта · серия '+db.streak+' 🔥';
+    else if(level==='alive') msg='🔥 Серия цела — подход засчитан ('+db.streak+' дн.)';
+    else msg = did>0 ? 'Есть движение! До «серия жива» — ещё чуть-чуть' : 'Начни движение, чтобы засчитать день';
+    document.getElementById('r-streak').textContent=msg;
+
     hap('heavy'); go('result'); playFinish();
     var _ri=document.querySelector('#s-result .rcard img');
     if(_ri){ _ri.classList.remove('celebrate'); void _ri.offsetWidth; _ri.classList.add('celebrate'); }
@@ -647,7 +848,7 @@
   function resetWorkout(){ running=false; window.removeEventListener('devicemotion', onMotion);
     initTask(); elBtn.textContent='▶︎ Начать задание'; elState.textContent=RU2[task[0][0]]+' · под любым углом'; }
 
-  renderHome(); initTask();
+  if(!profile){ window.startOnboarding(); } else { renderHome(); initTask(); }
 })();
 </script>
 </body>
