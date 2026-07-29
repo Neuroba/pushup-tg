@@ -36,9 +36,10 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--bg);color:var(--ink);
     font-family:"Nunito",ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;
-    -webkit-font-smoothing:antialiased}
-  body{padding:calc(env(safe-area-inset-top) + 26px) 20px calc(env(safe-area-inset-bottom) + 34px)}
-  .wrap{max-width:440px;margin:0 auto}
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;overflow-wrap:anywhere}
+  body{padding:calc(env(safe-area-inset-top) + 26px) 16px calc(env(safe-area-inset-bottom) + 34px)}
+  .wrap{width:100%;max-width:440px;margin:0 auto}
 
   .hero{text-align:center;margin-bottom:24px}
   .hero img{width:104px;height:104px;border-radius:26px;box-shadow:0 10px 30px rgba(23,29,62,.28);display:block;margin:0 auto 16px}
@@ -74,8 +75,12 @@
   .warn .num{background:rgba(255,255,255,.22);color:#fff}
 
   .linkbox{margin-top:14px;background:rgba(255,255,255,.18);border-radius:14px;padding:12px 14px;
-    font-size:13.5px;font-weight:800;word-break:break-all;line-height:1.35}
+    font-size:13px;font-weight:800;line-height:1.4;
+    overflow-wrap:anywhere;word-break:break-word;min-width:0}
 
+  .note{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--brdr);
+    font-size:13px;font-weight:700;color:var(--slate);line-height:1.45}
+  .note b{color:var(--ink);font-weight:900}
   .foot{text-align:center;font-size:13px;font-weight:700;color:var(--slate);line-height:1.5;margin-top:20px}
   .foot b{color:var(--ink)}
   .hide{display:none !important}
@@ -115,6 +120,8 @@
       <li><span class="num">2</span><span class="tx">Пролистай вниз до <b>«На экран “Домой”»</b></span></li>
       <li><span class="num">3</span><span class="tx">Нажми <b>«Добавить»</b> справа вверху</span></li>
     </ol>
+    <p class="note">Нет пункта «На экран “Домой”»? Значит страница открыта внутри мессенджера.
+      Нажми <b>⋯</b> внизу и выбери <b>«Открыть в Safari»</b>.</p>
   </div>
 
   <!-- C. Android -->
@@ -164,13 +171,13 @@
   var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
                    navigator.standalone === true;
 
-  // Встроенные браузеры мессенджеров: в WKWebView navigator.standalone не определён,
-  // в настоящем Safari — всегда true/false. Плюс прямые маркеры в UA.
+  // Встроенный браузер мессенджера или сторонний браузер на iOS — установить оттуда нельзя.
+  // Судим только по ЯВНЫМ маркерам: ошибиться в другую сторону нельзя, иначе человек
+  // в настоящем Safari упрётся в «открой в Safari» и не поймёт, что делать.
   var uaInApp = /FBAN|FBAV|Instagram|Line\/|MicroMessenger|VKAndroidApp|OKApp|Snapchat|Pinterest/i.test(ua);
   var tgWebview = !!window.TelegramWebviewProxy || !!(window.Telegram && window.Telegram.WebApp);
   var otherIOSBrowser = /CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser|DuckDuckGo/i.test(ua);
-  var iosNoSafari = isIOS && (uaInApp || tgWebview || otherIOSBrowser ||
-                              typeof navigator.standalone === 'undefined');
+  var iosNoSafari = isIOS && (uaInApp || tgWebview || otherIOSBrowser);
 
   var url = location.href.split('#')[0];
   var b = function(id){ return document.getElementById(id); };
