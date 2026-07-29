@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PushUp — установка</title>
+<meta name="description" content="Установи PushUp на телефон за 10 секунд — без App Store и без регистрации.">
+
+<link rel="apple-touch-icon" href="assets/pwa/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png">
+<meta name="theme-color" content="#F7F9F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0E11" media="(prefers-color-scheme: dark)">
+
+<meta property="og:title" content="PushUp — тренировка за 3 минуты">
+<meta property="og:description" content="Установи на телефон за 10 секунд. Без App Store, без регистрации.">
+<meta property="og:image" content="https://neuroba.github.io/pushup-tg/assets/pwa/icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* палитра — та же, что в приложении (src/styles.css) */
+  :root{
+    --brand:#10B981;--brand-dark:#059669;--flame:#F97316;
+    --bg:#F7F9F9;--surface:#FFFFFF;--brdr:#E5E9EB;--ink:#0E1116;--slate:#5B6670;
+    --panel:#EDF1EF;--accent:#D8F3E8;--accent-ink:#1C5D42;--navy:#171D3E;
+    --shadow-card-color:#D6DEDA;--shadow-button-color:#059669;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0B0E11;--surface:#161A1F;--brdr:#283039;--ink:#F7F9F9;--slate:#9AA4AD;
+      --panel:#232A31;--accent:#173D2E;--accent-ink:#D8F3E8;
+      --shadow-card-color:#05080B;--shadow-button-color:#0A6E4E;
+    }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Nunito",ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  body{padding:calc(env(safe-area-inset-top) + 26px) 20px calc(env(safe-area-inset-bottom) + 34px)}
+  .wrap{max-width:440px;margin:0 auto}
+
+  .hero{text-align:center;margin-bottom:24px}
+  .hero img{width:104px;height:104px;border-radius:26px;box-shadow:0 10px 30px rgba(23,29,62,.28);display:block;margin:0 auto 16px}
+  h1{margin:0 0 8px;font-size:27px;font-weight:900;letter-spacing:-.02em;line-height:1.15}
+  .sub{margin:0;font-size:15.5px;font-weight:700;color:var(--slate);line-height:1.45}
+
+  .card{background:var(--surface);border:1px solid var(--brdr);border-radius:28px;padding:22px;
+    box-shadow:0 6px 0 0 var(--shadow-card-color);margin-bottom:16px}
+  .card h2{margin:0 0 4px;font-size:18.5px;font-weight:900;letter-spacing:-.01em}
+  .card .lead{margin:0 0 16px;font-size:14.5px;font-weight:700;color:var(--slate);line-height:1.45}
+
+  .steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+  .steps li{display:flex;gap:13px;align-items:flex-start}
+  .num{flex:none;width:30px;height:30px;border-radius:11px;background:var(--accent);color:var(--accent-ink);
+    display:grid;place-items:center;font-weight:900;font-size:15px}
+  .steps .tx{font-size:15.5px;font-weight:700;line-height:1.4;padding-top:3px}
+  .steps .tx b{font-weight:900}
+  .steps .tx .q{display:inline-flex;align-items:center;gap:5px;background:var(--panel);border-radius:9px;
+    padding:2px 8px;margin:0 1px;white-space:nowrap;font-weight:900}
+  .sh{display:inline-block;width:15px;height:17px;vertical-align:-3px}
+
+  .btn{display:block;width:100%;border:0;border-radius:26px;padding:19px;font-size:17.5px;font-weight:900;
+    font-family:inherit;cursor:pointer;text-align:center;text-decoration:none;transition:transform .1s,box-shadow .1s}
+  .btn.primary{background:linear-gradient(135deg,#10B981,#06B6D4);color:#fff;box-shadow:0 4px 0 0 var(--shadow-button-color)}
+  .btn.primary:active{transform:translateY(4px);box-shadow:none}
+  .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--brdr);box-shadow:0 4px 0 0 var(--shadow-card-color)}
+  .btn.ghost:active{transform:translateY(3px);box-shadow:none}
+  .btn + .btn{margin-top:11px}
+
+  .warn{background:linear-gradient(135deg,#F97316,#FB7185);color:#fff;border:0;box-shadow:0 6px 0 0 #C2410C}
+  .warn h2,.warn .lead{color:#fff}
+  .warn .lead{opacity:.95}
+  .warn .num{background:rgba(255,255,255,.22);color:#fff}
+
+  .linkbox{margin-top:14px;background:rgba(255,255,255,.18);border-radius:14px;padding:12px 14px;
+    font-size:13.5px;font-weight:800;word-break:break-all;line-height:1.35}
+
+  .foot{text-align:center;font-size:13px;font-weight:700;color:var(--slate);line-height:1.5;margin-top:20px}
+  .foot b{color:var(--ink)}
+  .hide{display:none !important}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 22px);
+    background:var(--ink);color:var(--bg);padding:13px 20px;border-radius:16px;font-weight:900;font-size:14.5px;
+    opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+  .toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <img src="assets/pwa/icon-512.png" alt="PushUp" width="104" height="104">
+    <h1 id="h1">Поставь PushUp на телефон</h1>
+    <p class="sub" id="sub">Занимает 10 секунд. Ни App Store, ни регистрации, ни аккаунтов — приложение появится иконкой на твоём экране.</p>
+  </div>
+
+  <!-- A. открыто во встроенном браузере (Telegram, Instagram, почта) -->
+  <div class="card warn hide" id="c-inapp">
+    <h2>Сначала открой в Safari</h2>
+    <p class="lead">Ты открыл ссылку внутри мессенджера — отсюда установить нельзя. Это два тапа:</p>
+    <ol class="steps">
+      <li><span class="num">1</span><span class="tx">Нажми <b>⋯</b> или <b>значок Safari</b> внизу экрана</span></li>
+      <li><span class="num">2</span><span class="tx">Выбери <b>«Открыть в Safari»</b> — вернёшься на эту же страницу</span></li>
+    </ol>
+    <div class="linkbox" id="urlbox">https://neuroba.github.io/pushup-tg/install.html</div>
+    <button class="btn ghost" style="margin-top:14px" onclick="copyLink()">Скопировать ссылку</button>
+  </div>
+
+  <!-- B. iOS Safari — установка на экран «Домой» -->
+  <div class="card hide" id="c-ios">
+    <h2>Три тапа — и готово</h2>
+    <p class="lead">Кнопка «Поделиться» — квадрат со стрелкой вверх, внизу экрана Safari.</p>
+    <ol class="steps">
+      <li><span class="num">1</span><span class="tx">Нажми <span class="q"><svg class="sh" viewBox="0 0 24 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2v16M12 2L7 7M12 2l5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 12v12h16V12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Поделиться</span></span></li>
+      <li><span class="num">2</span><span class="tx">Пролистай вниз до <b>«На экран “Домой”»</b></span></li>
+      <li><span class="num">3</span><span class="tx">Нажми <b>«Добавить»</b> справа вверху</span></li>
+    </ol>
+  </div>
+
+  <!-- C. Android -->
+  <div class="card hide" id="c-android">
+    <h2>Установка в один тап</h2>
+    <p class="lead">Приложение встанет как обычное — иконкой в меню телефона.</p>
+    <button class="btn primary" id="btn-install" onclick="doInstall()">Установить PushUp</button>
+    <ol class="steps hide" id="android-manual" style="margin-top:16px">
+      <li><span class="num">1</span><span class="tx">Меню браузера <b>⋮</b> справа вверху</span></li>
+      <li><span class="num">2</span><span class="tx">Пункт <b>«Установить приложение»</b></span></li>
+    </ol>
+  </div>
+
+  <!-- D. десктоп -->
+  <div class="card hide" id="c-desktop">
+    <h2>Открой эту ссылку с телефона</h2>
+    <p class="lead">PushUp считает повторы датчиком движения — нужен телефон в руке. С компьютера можно только посмотреть.</p>
+    <div class="linkbox" style="background:var(--panel);color:var(--ink)" id="urlbox2">https://neuroba.github.io/pushup-tg/install.html</div>
+    <button class="btn ghost" style="margin-top:14px" onclick="copyLink()">Скопировать ссылку</button>
+  </div>
+
+  <!-- E. уже установлено -->
+  <div class="card hide" id="c-done">
+    <h2>Уже установлено 🎉</h2>
+    <p class="lead">Ты открыл PushUp с домашнего экрана. Дальше — только тренировка.</p>
+  </div>
+
+  <a class="btn primary" href="index.html?src=install" id="open-btn">Открыть приложение</a>
+
+  <p class="foot">
+    Работает без интернета после первого запуска.<br>
+    Повторы считает датчик движения — телефон в руке или в кармане.<br>
+    <b>Сейчас в тесте: приседания и прыжки.</b>
+  </p>
+</div>
+
+<div class="toast" id="toast">Ссылка скопирована</div>
+
+<script>
+(function(){
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/.test(ua) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/i.test(ua);
+  var isMobile = isIOS || isAndroid;
+
+  var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                   navigator.standalone === true;
+
+  // Встроенные браузеры мессенджеров: в WKWebView navigator.standalone не определён,
+  // в настоящем Safari — всегда true/false. Плюс прямые маркеры в UA.
+  var uaInApp = /FBAN|FBAV|Instagram|Line\/|MicroMessenger|VKAndroidApp|OKApp|Snapchat|Pinterest/i.test(ua);
+  var tgWebview = !!window.TelegramWebviewProxy || !!(window.Telegram && window.Telegram.WebApp);
+  var otherIOSBrowser = /CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser|DuckDuckGo/i.test(ua);
+  var iosNoSafari = isIOS && (uaInApp || tgWebview || otherIOSBrowser ||
+                              typeof navigator.standalone === 'undefined');
+
+  var url = location.href.split('#')[0];
+  var b = function(id){ return document.getElementById(id); };
+  var show = function(id){ b(id).classList.remove('hide'); };
+
+  b('urlbox').textContent = url;
+  b('urlbox2').textContent = url;
+
+  if (standalone) {
+    show('c-done');
+    b('h1').textContent = 'PushUp на месте';
+    b('sub').textContent = 'Приложение установлено. Открывай и тренируйся.';
+  } else if (iosNoSafari) {
+    show('c-inapp');
+    b('h1').textContent = 'Ещё один шаг';
+    b('sub').textContent = 'Установка работает только из Safari — мессенджер этого не умеет.';
+  } else if (isIOS) {
+    show('c-ios');
+  } else if (isAndroid) {
+    show('c-android');
+  } else {
+    show('c-desktop');
+    b('h1').textContent = 'PushUp — тренировка за 3 минуты';
+  }
+
+  // Android: системное окно установки, если браузер его предлагает
+  var deferred = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); deferred = e;
+  });
+  window.doInstall = function(){
+    if (deferred) {
+      deferred.prompt();
+      deferred.userChoice.then(function(){ deferred = null; });
+    } else {
+      b('btn-install').classList.add('hide');
+      b('android-manual').classList.remove('hide');
+    }
+  };
+
+  window.copyLink = function(){
+    var done = function(){
+      var t = b('toast'); t.classList.add('on');
+      setTimeout(function(){ t.classList.remove('on'); }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, fallback);
+    } else fallback();
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch(e){}
+      document.body.removeChild(ta);
+    }
+  };
+
+  // service worker ставим уже со страницы установки — тогда приложение
+  // открывается офлайн сразу после добавления на экран
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+
+  if (!isMobile) b('open-btn').textContent = 'Всё равно посмотреть';
+})();
+</script>
+</body>
+</html>

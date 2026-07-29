@@ -1,0 +1,20 @@
+{
+  "name": "PushUp — тренировки",
+  "short_name": "PushUp",
+  "description": "Короткая тренировка каждый день. Счёт повторов датчиком телефона, серия и капитал.",
+  "id": "/pushup-tg/",
+  "start_url": "./index.html?src=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F9F9",
+  "theme_color": "#F7F9F9",
+  "lang": "ru",
+  "dir": "ltr",
+  "categories": ["fitness", "health", "sports"],
+  "icons": [
+    { "src": "assets/pwa/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/pwa/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/pwa/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
