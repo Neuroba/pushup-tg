@@ -90,9 +90,10 @@
 <p class="foot"><a href="https://t.me/PushUp_community">→ Чат тестеров</a></p>
 
 <script>
-  // Ссылка на артефакт Codemagic подписана и живёт до 27.09.2026.
-  // Новая сборка — меняем только эту строку.
-  var APK = "https://wdnrdxqkajobjaorssza.supabase.co/storage/v1/object/public/builds/pushup.apk";
+  // Подписанная ссылка Codemagic, действует 60 дней с 30.07.2026.
+  // Новая сборка — меняем только эту строку. Supabase Storage не используем:
+  // аплоад 74 МБ с этого канала рвётся (curl 56).
+  var APK = "https://api.codemagic.io/artifacts/.eJwVwcuWQzAAANB_6d45Sku76EIfMRLaqMeEjRM6gzIVEkS_vmfuXZXWv2NPmRn2SmHIBPDLV9WGcm65X6kQDh2hmIRkM-Yx0tJN5YY_8jFocfutTGtXmqJ9pq6Hc2HBFE2Y-E5jdNExN3xPzmk56nNDa9XIoAioW7zRfDuVR0peHdj1Z_bsQm8QwWI1KFBLZUxjrvY8XgvJ8K-A0JX3K9ewNyHyOOHXrnXZUNxs3TgztNzT7E-wjNrYiaZl2YEq5ktEk4viPPa1a-2B7Hsbj07EgWO3oL4HPGc8Gq6qnolCU8y6b-BGs9-Jvje92k-CbAtjzQwAakje3oqtdTisPjroY-g.ALKgyfhVyADXhsGbX7HH_Zh-Us4";
   document.getElementById("dl").href = APK;
 </script>
 
