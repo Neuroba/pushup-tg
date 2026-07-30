@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PushUp для Android</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --navy:#0B1220; --navy-2:#121B2E; --line:#1E293B;
+    --fire:#FF6B35; --emerald:#10B981;
+    --text:#E8EDF5; --muted:#94A3B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--navy); color:var(--text);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:28px 20px 48px; max-width:520px; margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1{font-size:26px; line-height:1.2; font-weight:800; margin-bottom:8px}
+  .sub{color:var(--muted); margin-bottom:26px}
+  .btn{
+    display:block; text-align:center; text-decoration:none;
+    background:var(--fire); color:#fff; font-weight:800; font-size:17px;
+    padding:17px 20px; border-radius:16px; margin:0 0 10px;
+    box-shadow:0 8px 24px rgba(255,107,53,.28);
+  }
+  .btn:active{transform:scale(.985)}
+  .size{text-align:center; color:var(--muted); font-size:13px; margin-bottom:30px}
+  h2{font-size:14px; text-transform:uppercase; letter-spacing:.06em;
+     color:var(--muted); font-weight:700; margin:0 0 14px}
+  ol{list-style:none; counter-reset:s}
+  li{
+    counter-increment:s; position:relative; padding:0 0 18px 42px;
+    border-left:2px solid var(--line); margin-left:13px;
+  }
+  li:last-child{border-left-color:transparent; padding-bottom:0}
+  li::before{
+    content:counter(s); position:absolute; left:-14px; top:-2px;
+    width:28px; height:28px; border-radius:50%;
+    background:var(--navy-2); border:2px solid var(--line);
+    color:var(--emerald); font-weight:800; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  li b{display:block; margin-bottom:2px}
+  li span{color:var(--muted); font-size:15px}
+  .note{
+    background:var(--navy-2); border:1px solid var(--line);
+    border-radius:14px; padding:16px 18px; margin-top:28px;
+    color:var(--muted); font-size:14px;
+  }
+  .note b{color:var(--text)}
+  .foot{margin-top:24px; text-align:center; font-size:14px}
+  .foot a{color:var(--emerald); text-decoration:none}
+</style>
+</head>
+<body>
+
+<h1>PushUp для Android</h1>
+<p class="sub">Тестовая сборка. Телефон сам считает отжимания датчиком — кладёшь его на пол и опускаешься грудью.</p>
+
+<a class="btn" id="dl" href="#">Скачать APK</a>
+<p class="size">74 МБ · Android 8 и новее</p>
+
+<h2>Что дальше</h2>
+<ol>
+  <li>
+    <b>Открой скачанный файл</b>
+    <span>Шторка уведомлений или «Загрузки».</span>
+  </li>
+  <li>
+    <b>Android спросит про неизвестные источники</b>
+    <span>Разреши установку для браузера или «Файлов» — приложение не из Play Маркета, поэтому система переспрашивает. Один раз.</span>
+  </li>
+  <li>
+    <b>Установить → Открыть</b>
+    <span>Дальше имя, пара вопросов и первый подход.</span>
+  </li>
+</ol>
+
+<div class="note">
+  <b>Как считает.</b> Телефон лежит на полу экраном вверх, датчик у верхнего края — над ним и опускаешься грудью. Работает в темноте, камера не нужна, батарею не жрёт.
+</div>
+
+<div class="note">
+  <b>Что-то не так?</b> Напиши — любой затык важнее вежливого «нормально».
+</div>
+
+<p class="foot"><a href="https://t.me/PushUp_community">→ Чат тестеров</a></p>
+
+<script>
+  // Ссылка на артефакт Codemagic подписана и живёт до 27.09.2026.
+  // Новая сборка — меняем только эту строку.
+  var APK = "https://api.codemagic.io/artifacts/.eJwVwc2SQzAAAOB36d1MaI320ENipX6qqpiWS4ZBCFZSROvpd_b7dhT-QyLnQfnxKVsV9ip5hy-ggsiS-Dlp9WgA6T8dcmo-b1d3zNC0PZMVFKko2lKiN48m4YntfKlL2FDdRdCtwu1jD2js1TjJ16pjIhyMRZND_ZpwZsWKpv_WW736e_D9uXRvn8CKDtB7lqQ3W3Io5CFlN7m0eR-6e0VigUdZ2x8FFX7LolM4oMykmZHl6f3UDVEQbNYYW3nniZbJkj-M42Gb0ojfQrJqo4qWOnLFTQJVm0RWSNrbcHhsOSqOBp_tK8DHsrpOGejoTBa5YRNa73Rey_V83v0Bd9xkng.jbiSU_XVUgprSCfW526BC9mwSks";
+  document.getElementById("dl").href = APK;
+</script>
+
+</body>
+</html>
